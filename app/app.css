@@ -1,0 +1,200 @@
+/*============================================================ general */
+body {
+    overflow-x: hidden;
+    overflow-y: hidden;
+	background-color: #F8F8F8;
+}
+body, html, #app {
+	width: 100%;
+    height: 100%;
+    margin: 0;
+}
+body.notfound {
+	background-color: #D9443F;
+}
+[id^=pg-] {
+	width: 100vw;
+	height: 100vh;
+}
+.bg-white {
+		background: white !important;
+}
+.text-white {
+	color: white !important;
+}
+.text-purple {
+	color: #BD59D4 !important; /*official purple*/
+}
+.align-middle {
+	vertical-align: middle!important;
+}
+.pointer {
+	cursor: pointer;
+}
+.td-input {
+	padding: 8px 12px !important;
+}
+.action-icon {
+	padding: 10px 5px;
+	cursor: pointer;
+}
+
+/*============================================================ marker */
+[v_registration] {
+	opacity: 1 !important;
+}
+[v_registration] img {
+	display: none;
+}
+[v_registration]:after {
+	content: attr(v_registration);
+	color: #363F46; /*official dark color*/
+	font-weight: bold;
+	position: absolute;
+	top: 0;
+	left: 50%;
+	transform: translateX(-50%);
+}
+
+/*============================================================ iconmoon */
+.iconmoon {
+	font-size: 22px;
+	line-height: 0;
+}
+.iconmoon.set2 {
+	font-weight: bold;
+	font-size: 18px;
+}
+
+/*============================================================ uikit */
+.uk-padding-extra-small {
+    padding: 5px;
+}
+.uk-container {
+    margin-top: 25px;
+}
+zzz.uk-button {
+	border: none;
+	line-height: 40px;
+	transition: .3s ease;
+	box-shadow: 0 2px 5px 0 rgba(0,0,0,.16), 0 2px 10px 0 rgba(0,0,0,.12);
+}
+zzz.uk-button:hover {
+	box-shadow: 0 5px 11px 0 rgba(0,0,0,.18), 0 4px 15px 0 rgba(0,0,0,.25);
+}
+.uk-button-primary {
+	line-height: 40px;
+	border: none !important;
+	background: linear-gradient(40deg,#ff6ec4,#7873f5); /*official purple gradient*/
+}
+.uk-button-primary:hover {
+	background: linear-gradient(40deg,#E162AE,#6D69DB); /*official purple gradient darker*/
+}
+.uk-navbar-nav>li {
+	position: relative;
+}
+.uk-navbar-nav>li.uk-active>a:after {
+	content: '';
+	width: 100%;
+	height: 4px;
+	top: 55px;
+	position: absolute;
+	background: linear-gradient(40deg,#ff6ec4,#7873f5) !important; /*official purple gradient*/
+}
+.uk-input:focus, .uk-select:focus, .uk-textarea:focus {
+	border-color: #BD59D4; /*official purple*/
+}
+.uk-nav-divider {
+	border-top: 1px solid #e5e5e5;
+}
+.uk-form-label {
+	font-size: 16px;
+}
+
+/* ================================================================================== FAB */
+.fab {
+	position: fixed;
+	bottom: 25px;
+	right: 25px;
+	z-index: 100;
+}
+.fab .fab-item {
+	cursor: pointer;
+	color: white;
+	width: 55px;
+    height: 55px;
+	border-radius: 50%;
+	transition: .3s ease;
+	box-shadow: 0 5px 15px rgba(0,0,0,.28);
+	background: linear-gradient(40deg,#ff6ec4,#7873f5);
+}
+.fab .fab-item:hover {
+	background: linear-gradient(40deg,#E162AE,#6D69DB);
+}
+.fab .fab-item .iconmoon { line-height:1; }
+/* ================================================================================== FAB END */
+
+/*============================================================ login */
+#pg-login {
+	background: linear-gradient(135deg, #72c8f6 1%,#ce74f6 100%);
+}
+#pg-login:after {
+	content: '';
+	display: block;
+	height: 100vh;
+	background: url(../img/login.png) no-repeat center center;
+	background-size: contain;
+}
+#pg-login form {
+	width: 350px;
+}
+
+/*============================================================ Map */
+#gmap {
+	width: calc(100vw + 100px);
+	height: calc(100vh + 50px);
+	margin-top: 28px;
+}
+ul.map-panel-1 {
+	position: fixed;
+	top: 70px;
+	left: 15px;
+	background: rgba(54,63,70,.7);
+	padding: 0;
+	list-style: none;
+	margin: 0;
+}
+ul.map-panel-1 li {
+	padding: 10px;
+	text-align: center;
+}
+ul.map-panel-1 li.divider {
+	border-bottom: 1px solid rgba(255,255,255,.7);
+	padding-bottom: 15px;
+}
+ul.map-panel-1 li.divider + li {
+	padding-top: 15px;
+}
+ul.map-panel-1 li img {
+	width: 26px;
+}
+ul.map-panel-1 li.hide img {
+	opacity: .5;
+}
+.map-search-container {
+	position: fixed;
+	top: 70px;
+	right: 15px;
+}
+.map-search-container input {
+	border-color: transparent !important;
+	background-color: rgba(54,63,70,.7) !important;
+	color: white !important;
+	width: 400px;
+}
+.map-search-container .iconmoon {
+	position: absolute;
+	top: 20px;
+	right: 10px;
+	color: rgba(255,255,255,.7);
+}

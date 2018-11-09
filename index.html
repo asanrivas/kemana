@@ -1,0 +1,433 @@
+<!DOCTYPE HTML>
+<html>
+	<head>
+		<meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no, width=device-width">
+		<title>Fleet!</title>
+		<link rel="icon" type="image/png" href="img/favicon.png">
+
+		<link rel="stylesheet" href="lib/uikit-3.0.0/uikit.min.css">
+		<link rel="stylesheet" href="lib/switch/switch.css">
+		<link rel="stylesheet" href="font/icomoon/style.css">
+		<link rel="stylesheet" href="app/app.css">
+	</head>
+
+	<body>
+		<div id="app">
+		
+			<!-- ========================================================================================== PAGE LOGIN -->
+			<div v-if="page=='login'" id="pg-login">
+				<form id="form-login" class="uk-position-center uk-form-stacked uk-padding uk-text-center uk-card-default bg-white" @keyup.enter="login">
+					<img src="img/logo.svg" class="uk-margin" style="height:50px">
+					<div class="uk-margin-small">
+						<label class="uk-form-label">Username</label>
+						<div class="uk-form-controls">
+							<input class="uk-input uk-text-center" id="username" type="text">
+						</div>
+					</div>
+					<div class="uk-margin-small">
+						<label class="uk-form-label">Password</label>
+						<div class="uk-form-controls">
+							<input class="uk-input uk-text-center" id="password" type="password">
+						</div>
+					</div>
+					<button type="button" class="uk-button uk-button-primary" @click="login">Sign In</button>
+				</form>
+			</div>
+
+			<!-- ========================================================================================== NAVBAR -->
+			<template v-if="page!='login' && page!=null">
+				<nav class="uk-navbar-container uk-padding-small uk-card-default bg-white" uk-navbar uk-sticky>
+					<div class="uk-navbar-left">
+						<img src="img/logo.svg" style="height:20px">
+					</div>
+					<div class="uk-navbar-center">
+						<ul class="uk-navbar-nav">
+							<li :class="{'uk-active': page=='map'}"><a class="nav-link" href="#map">Map</a></li>
+							<li :class="{'uk-active': page=='driver'}"><a class="nav-link" href="#driver">Driver</a></li>
+							<li :class="{'uk-active': page=='smartphone'}"><a class="nav-link" href="#smartphone">Smartphone</a></li>
+							<li :class="{'uk-active': page=='vehicle'}"><a class="nav-link" href="#vehicle">Vehicle</a></li>
+							<li :class="{'uk-active': page=='maintenance'}"><a class="nav-link" href="#maintenance">Maintenance</a></li>
+							<li :class="{'uk-active': page=='notification'}"><a class="nav-link" href="#notification">Notification</a></li>
+							<li :class="{'uk-active': page=='setting'}"><a class="nav-link" href="#setting">Setting</a></li>
+						</ul>
+					</div>
+					<div class="uk-navbar-right">
+						<div class="pointer"><span class="uk-margin-small-right align-middle ">Administrator</span><span class="iconmoon icon-chevron-down align-middle"></span></div>
+						<div uk-dropdown="mode:click;" class="uk-padding-small">
+							<ul class="uk-nav uk-dropdown-nav">
+								<li class="uk-active"><a href="#modal-theme" uk-toggle><span class="iconmoon icon-image align-middle"></span><span class="align-middle uk-margin-small-left">Theme</span></a></li>
+								<li class="uk-active"><a><span class="iconmoon icon-unlock align-middle"></span><span class="align-middle uk-margin-small-left">Logout</span></a></li>
+							</ul>
+						</div>
+					</div>
+				</nav>
+			</template>
+
+			<!-- ========================================================================================== PAGE MAP -->
+			<div v-show="page=='map'">
+				<div id="gmap" class="uk-position-center"></div>
+				<ul class="uk-border-rounded map-panel-1">
+					<li @click="gmap.centerMap" uk-tooltip="title: Center Map; pos: right"><a><img src="img/icon_map_centerMap.svg"></a></li>
+					<li class="divider" @click="showInMap('')" uk-tooltip="title: Fit Bounds; pos: right"><a><img src="img/icon_map_fitBounds.svg"></a></li>
+					<li v-for="item in lov.vehicleType" :class="{hide: !item.show}" @click="item.show=!item.show; gmap.update();" :uk-tooltip="'title: '+(item.show?'Hide':'Show')+' '+item.desc+'; pos: right'"><a><img :src="'img/icon_map_'+item.code+'.svg'"></a></li>
+				</ul>
+				<div class="map-search-container">
+					<input class="uk-input uk-border-rounded" type="text" placeholder="Search vehicle" v-model="gmap.search" @keyup.enter="showInMap(gmap.search)">
+					<span v-if="gmap.search==''" class="iconmoon icon-search"></span>
+					<span v-else class="iconmoon icon-x pointer" @click="gmap.search=''; gmap.update(1);"></span>
+				</div>
+			</div>
+
+			<!-- ========================================================================================== PAGE DRIVER -->
+			<div v-if="page=='driver'" class="uk-container">
+				<div class="uk-card-default uk-padding-small">
+					<table class="uk-table uk-table-divider">
+						<thead>
+							<tr>
+								<th>NAME</th>
+								<th>ID</th>
+								<th>GENDER</th>
+								<th class="uk-table-shrink uk-text-center">ACTION</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr v-for="item in list.driver">
+								<td>{{item.d_name}}</td>
+								<td>{{item.d_nric}}</td>
+								<td>{{item.lg_desc}}</td>
+								<td class="uk-text-center"><span 
+									class="iconmoon icon-file-text action-icon" uk-tooltip="title: Detail; pos: bottom" uk-toggle="target: #modal-driver" @click="modal.driver=JSON.parse(JSON.stringify(item))"></span><span 
+									class="iconmoon icon-trash-2 action-icon" uk-tooltip="title: Delete; pos: bottom" @click="crudDriver('delete', item.d_id)"></span>
+								</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+				
+				<div class="fab">
+					<div class="fab-item" uk-tooltip="title: New; pos: left" uk-toggle="target: #modal-driver" @click="modal.driver={d_id:0}"><span class="uk-position-center iconmoon icon-plus"></span></div>
+				</div>
+			</div>
+			
+			<!-- ========================================================================================== PAGE SMARTPHONE -->
+			<div v-if="page=='smartphone'" class="uk-container">
+				<div class="uk-card-default uk-padding-small">
+					<table class="uk-table uk-table-divider">
+						<thead>
+							<tr>
+								<th>NUMBER</th>
+								<th>DRIVER'S NAME</th>
+								<th>DRIVER'S ID</th>
+								<th>ACTIVATED</th>
+								<th class="uk-table-shrink uk-text-center">ACTION</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr v-for="item in list.smartphone">
+								<td>{{item.s_number}}</td>
+								<td>{{item.d_name}}</td>
+								<td>{{item.d_nric}}</td>
+								<td :class="{'uk-text-success':item.s_activated=='1', 'uk-text-danger':item.s_activated=='0'}">{{item.s_activated=='1'?'Yes':'No'}}</td>
+								<td class="uk-text-center"><span 
+									class="iconmoon icon-file-text action-icon" uk-tooltip="title: Detail; pos: bottom" uk-toggle="target: #modal-smartphone" @click="modal.smartphone=JSON.parse(JSON.stringify(item))"></span><span 
+									class="iconmoon icon-link action-icon" uk-tooltip="title: Activate; pos: bottom" @click="generateQr(item.s_uuid)"></span><span 
+									class="iconmoon icon-trash-2 action-icon" uk-tooltip="title: Delete; pos: bottom" @click="crudSmartphone('delete', item.s_id)"></span>
+								</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+				
+				<div class="fab">
+					<div class="fab-item" uk-tooltip="title: New; pos: left" uk-toggle="target: #modal-smartphone" @click="modal.smartphone={s_id:0}"><span class="uk-position-center iconmoon icon-plus"></span></div>
+				</div>
+			</div>
+
+			<!-- ========================================================================================== PAGE VEHICLE -->
+			<div v-if="page=='vehicle'" class="uk-container">
+				<div class="uk-card-default uk-padding-small">
+					<table class="uk-table uk-table-divider">
+						<thead>
+							<tr>
+								<th>REG. NO.</th>
+								<th>TYPE</th>
+								<th>CURRENT DRIVER</th>
+								<th>DRIVER'S PHONE</th>
+								<th>CONDITION</th>
+								<th class="uk-table-shrink uk-text-center">ACTION</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr v-for="item in list.vehicle">
+								<td>{{item.v_registration}}</td>
+								<td>{{item.desc}}</td>
+								<td>{{item.d_name}}</td>
+								<td>{{item.s_number}}</td>
+								<td :class="item.lvc_class">{{item.lvc_desc}}</td>
+								<td class="uk-text-center"><span 
+									class="iconmoon action-icon icon-file-text" uk-tooltip="title: Detail; pos: bottom" uk-toggle="target: #modal-vehicle" @click="modal.vehicle=JSON.parse(JSON.stringify(item))"></span><span 
+									class="iconmoon action-icon icon-map" uk-tooltip="title: Show In Map; pos: bottom" @click="showInMap(item.v_registration)"></span><span 
+									class="iconmoon action-icon icon-trash-2" uk-tooltip="title: Delete; pos: bottom" @click="crudVehicle('delete', item.v_id)"></span>
+								</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+				
+				<div class="fab">
+					<div class="fab-item" uk-tooltip="title: New; pos: left" uk-toggle="target: #modal-vehicle" @click="modal.vehicle={v_id:0,lvc_id:'good'}"><span class="uk-position-center iconmoon icon-plus"></span></div>
+				</div>
+			</div>
+			
+			<!-- ========================================================================================== PAGE MAINTENANCE -->
+			<div v-if="page=='maintenance'" class="uk-container">
+				<div class="uk-card-default uk-padding-small">
+					<table class="uk-table uk-table-divider">
+						<thead>
+							<tr>
+								<th>REG. NO.</th>
+								<th>TYPE</th>
+								<th>YEAR</th>
+								<th>MILEAGE (KM)</th>
+								<th>LAST SERVICE</th>
+								<th>CONDITION</th>
+								<th class="uk-table-shrink uk-text-center">ACTION</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr v-for="item in list.maintenance">
+								<td>{{item.v_registration}}</td>
+								<td>{{item.desc}}</td>
+								<td>{{item.dummy_year}}</td>
+								<td>{{item.dummy_mileage}}</td>
+								<td>{{item.dummy_last_service}}</td>								
+								<td :class="item.lvc_class">{{item.lvc_desc}}</td>
+								<td class="uk-text-center"><span 
+									class="iconmoon action-icon icon-file-text" uk-tooltip="title: Detail; pos: bottom"></span><span 
+									class="iconmoon action-icon icon-tools-2 set2" uk-tooltip="title: Record New Service; pos: bottom"></span><span 
+									class="iconmoon action-icon icon-map" uk-tooltip="title: Show In Map; pos: bottom" @click="showInMap(item.v_registration)"></span>
+								</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+			</div>
+			
+			<!-- ========================================================================================== PAGE SETTING -->
+			<div v-if="page=='setting'" class="uk-container">
+				<ul uk-accordion class="uk-card-default uk-padding-small">
+					<li>
+						<a class="uk-accordion-title">Map</a>
+						<div class="uk-accordion-content">
+							<form class="uk-form-horizontal">
+								<div class="uk-margin-small">
+									<label class="uk-form-label" for="form-horizontal-text">Default zoom level</label>
+									<div class="uk-form-controls">
+										<input class="uk-range" name="default-zoom" type="range" value="15" min="1" max="18" step="1">
+									</div>
+								</div>
+								<div class="uk-margin-small">
+									<label class="uk-form-label" for="form-horizontal-select">Default center coordinate</label>
+									<div class="uk-form-controls">
+										<input class="uk-input" name="default-coordinate" type="text" placeholder="2.3138884,102.3211577" value="2.3138884,102.3211577">
+									</div>
+								</div>
+							</form>
+						</div>
+					</li>
+					<li>
+						<a class="uk-accordion-title">Vehicle Type</a>
+						<div class="uk-accordion-content">
+							<table class="uk-table uk-table-divider">
+								<thead>
+									<tr>
+										<th>CODE</th>
+										<th>DESCRIPTION</th>
+										<th class="uk-table-shrink">ACTIVE</th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr v-for="item in lov.vehicleType">
+										<td>{{item.code}}</td>
+										<td class="td-input"><input class="uk-input" type="text" :placeholder="item.code" :value="item.desc"></td>
+										<td class="td-input">
+											<input type="checkbox" :id="item.code" :name="item.code" class="switch-input" :checked="item.status" @click="item.status=!item.status">
+											<label :for="item.code" class="switch-label"><span class="toggle--on"></span><span class="toggle--off"></span></label>
+										</td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
+					</li>
+				</ul>
+			</div>
+			
+			<!-- ========================================================================================== PAGE NOT FOUND -->
+			<div v-if="page=='notfound'" class="uk-container"><img class="uk-width-1-3 uk-position-center uk-margin-medium-top" src="img/404.png"></div>
+
+			<!-- ========================================================================================== MODAL DRIVER -->
+			<div id="modal-driver" uk-modal>
+				<div class="uk-modal-dialog">
+					<div class="uk-modal-body">
+						<form class="uk-form-horizontal">
+							<div class="uk-margin-small">
+								<label class="uk-form-label">ID</label>
+								<div class="uk-form-controls">
+									<input class="uk-input" type="text" placeholder="NRIC or any unique ID" v-model="modal.driver.d_nric">
+								</div>
+							</div>
+							<div class="uk-margin-small">
+								<label class="uk-form-label">Name</label>
+								<div class="uk-form-controls">
+									<input class="uk-input" type="text" placeholder="Driver's name or description" v-model="modal.driver.d_name">
+								</div>
+							</div>
+							<div class="uk-margin-small">
+								<label class="uk-form-label">Gender</label>
+								<div class="uk-form-controls">
+									<select class="uk-select" v-model="modal.driver.lg_id">
+										<option v-for="opt in lov.gender" :value="opt.lg_id">{{opt.lg_desc}}</option>
+									</select>
+								</div>
+							</div>
+						</form>
+					</div>
+					<div class="uk-modal-footer uk-text-right">
+						<button class="uk-button uk-button-default uk-modal-close" type="button">Cancel</button>
+						<button class="uk-button uk-button-primary" type="button" @click="crudDriver('addupdate')">Save</button>
+					</div>
+				</div>
+			</div>
+			
+			<!-- ========================================================================================== MODAL SMARTPHONE -->
+			<div id="modal-smartphone" uk-modal>
+				<div class="uk-modal-dialog">
+					<div class="uk-modal-body">
+						<form class="uk-form-horizontal">
+							<div class="uk-margin-small">
+								<label class="uk-form-label">Number</label>
+								<div class="uk-form-controls">
+									<input class="uk-input" type="text" placeholder="019-2105856" data-inputmask="'mask': '999-9999999'" v-model="modal.smartphone.s_number">
+								</div>
+							</div>
+							<div class="uk-margin-small">
+								<label class="uk-form-label">Driver's Name</label>
+								<div class="uk-form-controls">
+									<select class="uk-select" v-model="modal.smartphone.d_id">
+										<option v-for="opt in list.driver" :value="opt.d_id">{{opt.d_name}}{{opt.d_nric?' ('+opt.d_nric+')':''}}</option>
+									</select>
+								</div>
+							</div>
+						</form>
+					</div>
+					<div class="uk-modal-footer uk-text-right">
+						<button class="uk-button uk-button-default uk-modal-close" type="button">Cancel</button>
+						<button class="uk-button uk-button-primary" type="button" @click="crudSmartphone('addupdate')">Save</button>
+					</div>
+				</div>
+			</div>
+			
+			<!-- ========================================================================================== MODAL VEHICLE -->
+			<div id="modal-vehicle" uk-modal>
+				<div class="uk-modal-dialog">
+					<div class="uk-modal-body">
+						<form class="uk-form-horizontal">
+							<div class="uk-margin-small">
+								<label class="uk-form-label">Reg. No.</label>
+								<div class="uk-form-controls">
+									<input class="uk-input" type="text" placeholder="Vehicle plat number" v-model="modal.vehicle.v_registration">
+								</div>
+							</div>
+							<div class="uk-margin-small">
+								<label class="uk-form-label" for="vehicle-type">Type</label>
+								<div class="uk-form-controls">
+									<select class="uk-select" v-model="modal.vehicle.code">
+										<option v-for="opt in lov.vehicleType" :value="opt.code">{{opt.desc}}</option>
+									</select>
+								</div>
+							</div>
+							<div class="uk-margin-small">
+								<label class="uk-form-label" for="vehicle-type">Current Driver</label>
+								<div class="uk-form-controls">
+									<select class="uk-select" v-model="modal.vehicle.d_id">
+										<option v-for="opt in list.driver" :value="opt.d_id">{{opt.d_name}}{{opt.d_nric?' ('+opt.d_nric+')':''}}</option>
+									</select>
+								</div>
+							</div>
+							<div class="uk-margin-small">
+								<label class="uk-form-label">Condition</label>
+								<div class="uk-form-controls">
+									<select class="uk-select" v-model="modal.vehicle.lvc_id">
+										<option v-for="opt in lov.vehicleCondition" :value="opt.lvc_id">{{opt.lvc_desc}}</option>
+									</select>
+								</div>
+							</div>
+							<div class="uk-margin-small">
+								<label class="uk-form-label" for="vehicle-make">Make</label>
+								<div class="uk-form-controls">
+									<input class="uk-input" id="vehicle-make" type="text" placeholder="Proton">
+								</div>
+							</div>
+							<div class="uk-margin-small">
+								<label class="uk-form-label" for="vehicle-model">Model</label>
+								<div class="uk-form-controls">
+									<input class="uk-input" id="vehicle-model" type="text" placeholder="Model">
+								</div>
+							</div>
+							<div class="uk-margin-small">
+								<label class="uk-form-label" for="vehicle-year">Year</label>
+								<div class="uk-form-controls">
+									<input class="uk-input" id="vehicle-year" type="text" placeholder="2012">
+								</div>
+							</div>
+							<div class="uk-margin-small">
+								<label class="uk-form-label" for="vehicle-cc">Engine Capacity</label>
+								<div class="uk-form-controls">
+									<input class="uk-input" id="vehicle-cc" type="text" placeholder="1468 cc">
+								</div>
+							</div>
+							<div class="uk-margin-small">
+								<label class="uk-form-label" for="vehicle-transmission">Transmission</label>
+								<div class="uk-form-controls">
+									<select class="uk-select">
+										<option value="automatic">Automatic</option>
+										<option value="manual">Manual</option>
+									</select>
+								</div>
+							</div>
+							<div class="uk-margin-small">
+								<label class="uk-form-label" for="vehicle-mileage">Mileage (KM)</label>
+								<div class="uk-form-controls">
+									<input class="uk-input" id="vehicle-mileage" type="text" placeholder="270000">
+								</div>
+							</div>
+							<div class="uk-margin-small">
+								<label class="uk-form-label" for="vehicle-colour">Colour</label>
+								<div class="uk-form-controls">
+									<input class="uk-input" id="vehicle-colour" type="text" placeholder="Orange">
+								</div>
+							</div>
+						</form>
+					</div>
+					<div class="uk-modal-footer uk-text-right">
+						<button class="uk-button uk-button-default uk-modal-close" type="button">Cancel</button>
+						<button class="uk-button uk-button-primary" type="button" @click="crudVehicle('addupdate')">Save</button>
+					</div>
+				</div>
+			</div>
+
+		</div>
+
+		<script src="lib/jquery-3.3.1/jquery.min.js"></script>
+		<script src="lib/moment/moment.min.js"></script>
+		<script src="lib/uikit-3.0.0/uikit.min.js"></script>
+		<script src="lib/vuejs/vue.js"></script>
+		<script src="lib/neocotic-qrious/qrious.min.js"></script>
+		<script src="lib/RobinHerbots-inputmask/jquery.inputmask.bundle.min.js"></script>
+		<script src="https://www.gstatic.com/firebasejs/5.5.8/firebase.js"></script>
+
+		<script src="app/app.js"></script>
+
+		<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAuK6RCR8833Ei9sbZ5Y7it9ananiJxYSg" async defer></script>
+	</body>
+</html>

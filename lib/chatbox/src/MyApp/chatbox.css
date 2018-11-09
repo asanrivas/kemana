@@ -1,0 +1,108 @@
+.chatbox {
+	min-height: 200px;
+	margin-right: -15px;
+}
+.chatbox_msg {
+	border: 1px solid #CED4DA;
+	border-radius: 0.25rem;
+	padding: 4px 10px;
+	background: #F3F3F3;
+	position: relative;
+	display: table;
+	margin: 0 25px 15px 10px;
+}
+.chatbox_msg.me {
+	background: #607D8B;
+	color: white;
+	float: right;
+}
+.chatbox_msg:before {
+	content: '';
+    position: absolute;
+    top: -1px;
+    left: -1px;
+    width: 20px;
+    height: 20px;
+    border: 1px solid #CED4DA;
+    background: #F3F3F3;
+    transform: skewX(45deg);
+    clip: rect(0px, 15px, 10px, 0px);
+}
+.chatbox_msg.me:before {
+	background: #607D8B;
+	transform: skewX(-45deg);
+    clip: rect(0px, 20px, 10px, 5px);
+	left: auto;
+    right: -1px;
+}
+.chatbox_msg .chatbox_timestamp {
+	color: #22B99A;
+}
+.chatbox_msg.me .chatbox_timestamp,
+.chatbox_editor .chatbox_timestamp
+{
+	color: #00FFCB;
+}
+.chatbox_msg.me, .chatbox_msg.me:before {
+	border-color: #345869;
+}
+.chatbox_menu {
+    position: absolute;
+    top: 0;
+    right: 0;
+    padding: 4px 8px;
+}
+.chatbox_editor {
+	background: #22B99A;
+	padding: 10px 44px 10px 10px;
+	margin: 0 -15px -15px -15px;
+	position: relative;
+}
+.chatbox_textarea {
+	background: white;
+	border-radius: .25rem;
+	padding: 4px 10px;
+	outline: 0;
+}
+.chatbox_textarea p,
+.chatbox_msg p {
+    margin: 0;
+}
+.chatbox_seperator {
+	clear: both;
+}
+.chatbox .dropdown-menu.show {
+    padding: 0;
+	overflow: hidden;
+}
+.chatbox .dropdown-menu.show .dropdown-item {
+	padding: .25rem .75rem;
+}
+.chatbox_editor .chatbox_quote {
+	color: white;
+}
+.chatbox_quote {
+	display: block;
+    background: rgba(0,0,0,.2);
+    padding: 4px 10px;
+    border-radius: .25rem;
+    margin-bottom: 10px;
+	cursor: pointer;
+	transition: .3s;
+}
+.chatbox_quote:hover {
+	background: rgba(0,0,0,.4);
+}
+.chatbox_quote_cancel, .chatbox_send {
+	position: absolute;
+    right: 0;
+    top: 0;
+    padding: 9px 12px;
+    color: white;
+    font-size: 20px;
+    cursor: pointer;
+}
+.chatbox_send {
+	top: initial;
+    bottom: 0;
+}

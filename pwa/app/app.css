@@ -1,0 +1,36 @@
+/* ================================================================================== WELCOME */
+#pg-welcome {
+	background: linear-gradient(40deg,#EFEFEF 0%,#FFFFFF 65%);
+}
+#qrScanner {
+	position: absolute;
+	top: 0;
+	left: 0;
+	opacity: 0;
+	width: 100%;
+	height: 100%;
+}
+
+/* ================================================================================== tracking */
+#pg-tracking {
+	background: #2ECC71;
+}
+.vehicle {
+	animation: bounce 100ms infinite alternate;
+}
+.road {
+	animation: road 1s ease-out infinite;
+}
+@keyframes road {
+	0% { transform: translate(300%, -50%); }
+	75% { opacity: 1; }
+	100% { opacity: 0; transform: translate(-300%, -50%); }
+}
+@keyframes bounce {
+	0% {
+		transform: translate(-50%, -50%);
+	}
+	100% {
+		transform: translate(-50%,-55%);
+	}
+}

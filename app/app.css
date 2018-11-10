@@ -42,19 +42,31 @@ body.notfound {
 /*============================================================ marker */
 [v_registration] {
 	opacity: 1 !important;
-}
-[v_registration] img {
-	display: none;
+	overflow: initial !important;
 }
 [v_registration]:after {
 	content: attr(v_registration);
-	color: #363F46; /*official dark color*/
+	color: white;
+	padding: 2px 4px;
+	border-radius: 4px;
 	font-weight: bold;
 	position: absolute;
-	top: 0;
+	top: -5px;
 	left: 50%;
 	transform: translateX(-50%);
+	white-space: nowrap;
 }
+[v_registration][v_type=bus]:after { background: #F45D2E; }
+[v_registration][v_type=car]:after { background: #AB47BC; }
+[v_registration][v_type=lorry]:after { background: #F1C40F; }
+[v_registration][v_type=motorbike]:after { background: #C8D24B; }
+[v_registration][v_type=van]:after { background: #19B4CA; }
+
+#gmap[markerhide*='|bus|'] .marker[v_type=bus] { display: none; }
+#gmap[markerhide*='|car|'] .marker[v_type=car] { display: none; }
+#gmap[markerhide*='|lorry|'] .marker[v_type=lorry] { display: none; }
+#gmap[markerhide*='|motorbike|'] .marker[v_type=motorbike] { display: none; }
+#gmap[markerhide*='|van|'] .marker[v_type=van] { display: none; }
 
 /*============================================================ iconmoon */
 .iconmoon {

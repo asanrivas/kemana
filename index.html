@@ -65,16 +65,16 @@
 
 			<!-- ========================================================================================== PAGE MAP -->
 			<div v-show="page=='map'">
-				<div id="gmap" class="uk-position-center"></div>
+				<div id="gmap" class="uk-position-center" :markerhide="gmap.markerHide()"></div>
 				<ul class="uk-border-rounded map-panel-1">
 					<li @click="gmap.centerMap" uk-tooltip="title: Center Map; pos: right"><a><img src="img/icon_map_centerMap.svg"></a></li>
-					<li class="divider" @click="showInMap('')" uk-tooltip="title: Fit Bounds; pos: right"><a><img src="img/icon_map_fitBounds.svg"></a></li>
-					<li v-for="item in lov.vehicleType" :class="{hide: !item.show}" @click="item.show=!item.show; gmap.update();" :uk-tooltip="'title: '+(item.show?'Hide':'Show')+' '+item.desc+'; pos: right'"><a><img :src="'img/icon_map_'+item.code+'.svg'"></a></li>
+					<li class="divider" @click="gmap.showInMap('')" uk-tooltip="title: Fit Bounds; pos: right"><a><img src="img/icon_map_fitBounds.svg"></a></li>
+					<li v-for="(item, propertyName) in lov.vehicleType" :class="{hide: !item.show}" @click="item.show=!item.show" :uk-tooltip="'title: '+(item.show?'Hide':'Show')+' '+item.desc+'; pos: right'"><a><img :src="'img/icon_map_'+item.code+'.svg'"></a></li>
 				</ul>
 				<div class="map-search-container">
-					<input class="uk-input uk-border-rounded" type="text" placeholder="Search vehicle" v-model="gmap.search" @keyup.enter="showInMap(gmap.search)">
+					<input class="uk-input uk-border-rounded" type="text" placeholder="Search vehicle" v-model="gmap.search" @keyup.enter="gmap.showInMap(gmap.search)">
 					<span v-if="gmap.search==''" class="iconmoon icon-search"></span>
-					<span v-else class="iconmoon icon-x pointer" @click="gmap.search=''; gmap.update(1);"></span>
+					<span v-else class="iconmoon icon-x pointer" @click="gmap.search=''; gmap.showInMap(gmap.search);"></span>
 				</div>
 			</div>
 
@@ -166,7 +166,7 @@
 								<td :class="item.lvc_class">{{item.lvc_desc}}</td>
 								<td class="uk-text-center"><span 
 									class="iconmoon action-icon icon-file-text" uk-tooltip="title: Detail; pos: bottom" uk-toggle="target: #modal-vehicle" @click="modal.vehicle=JSON.parse(JSON.stringify(item))"></span><span 
-									class="iconmoon action-icon icon-map" uk-tooltip="title: Show In Map; pos: bottom" @click="showInMap(item.v_registration)"></span><span 
+									class="iconmoon action-icon icon-map" uk-tooltip="title: Show In Map; pos: bottom" @click="gmap.showInMap(item.v_registration)"></span><span 
 									class="iconmoon action-icon icon-trash-2" uk-tooltip="title: Delete; pos: bottom" @click="crudVehicle('delete', item.v_id)"></span>
 								</td>
 							</tr>
@@ -205,7 +205,7 @@
 								<td class="uk-text-center"><span 
 									class="iconmoon action-icon icon-file-text" uk-tooltip="title: Detail; pos: bottom"></span><span 
 									class="iconmoon action-icon icon-tools-2 set2" uk-tooltip="title: Record New Service; pos: bottom"></span><span 
-									class="iconmoon action-icon icon-map" uk-tooltip="title: Show In Map; pos: bottom" @click="showInMap(item.v_registration)"></span>
+									class="iconmoon action-icon icon-map" uk-tooltip="title: Show In Map; pos: bottom" @click="gmap.showInMap(item.v_registration)"></span>
 								</td>
 							</tr>
 						</tbody>

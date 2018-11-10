@@ -41,7 +41,7 @@ db.enablePersistence().then(function() {
 					markers: [],
 					init: function() {
 						app.$nextTick(function () { //nie nak buang
-							if (window['google'] && !app.gmap.map) {
+							if (window['google'] && !app.gmap.map && app.page=='map') {
 								
 								//================================================================================================ init map
 								app.gmap.map = new google.maps.Map(document.getElementById('gmap'), {
@@ -56,9 +56,6 @@ db.enablePersistence().then(function() {
 									console.log(event.latLng.lat().toFixed(6)+','+event.latLng.lng().toFixed(6));
 								});
 
-								//app.gmap.eventListener();
-								//app.gmap.update();
-								
 								//================================================================================================ get fleet
 								db.collection("current").onSnapshot(function(docs) {
 									
@@ -83,24 +80,12 @@ db.enablePersistence().then(function() {
 														anchor: new google.maps.Point(26, 73)
 													},
 													map: app.gmap.map,
-													title: 'REG_'+doc.id,
-													v_registration: doc.id
+													title: 'REG|'+doc.id+'|'+doc.data().type,
+													v_registration: doc.id,
+													v_type: doc.data().type
 												})
 											);
 										}
-									});
-									
-									console.log("Masa mula: ", app.gmap.markers);
-									
-									//============================================================================================ display fleet's v_registration and attach click event
-									$('[title^=REG_]:first').siblings().not('[title^=REG_]').remove();
-									$('[title^=REG_]:first').parent().siblings().remove();
-									$('[title^=REG_]').each(function(){
-										$(this)
-											.attr('v_registration', $(this).attr('title').replace('REG_',''))
-											.removeAttr('title').click(function(){
-												console.log($(this).attr('v_registration'));
-											});
 									});
 								});
 								
@@ -110,85 +95,69 @@ db.enablePersistence().then(function() {
 							}
 						});
 					},
-					update_zzz: function(fitBounds) {
-						if (window['google']) {
-							$.getJSON("api/getVehicleLocation.php", {
-								filterByType: "'"+app.lov.vehicleType.filter(item => item.show).map(function(item, i) { return item.code }).join("','")+"'",
-								filterBySearch: app.gmap.search
-							}, function(data){
-								app.gmap.bounds = new google.maps.LatLngBounds();
-								var markers = data.vehicle_location.map(function(item, i) {
-
-									app.gmap.bounds.extend(new google.maps.LatLng(
-										Number(item.vl_location.split(',')[0]),
-										Number(item.vl_location.split(',')[1])
-									));
-
-									return new google.maps.Marker({
-										position: {
-											lat: Number(item.vl_location.split(',')[0]),
-											lng: Number(item.vl_location.split(',')[1])
-										},
-										icon: {
-											url: 'img/pin_fleet_'+item.code+'.svg',
-											size: new google.maps.Size(50, 80),
-											scaledSize: new google.maps.Size(50, 80),
-											anchor: new google.maps.Point(26, 73)
-										},
-										map: app.gmap.map,
-										title: 'REG_'+item.v_registration
-									});
-
-								});
-
-								app.gmap.markerCluster.clearMarkers();
-								app.gmap.markerCluster = new MarkerClusterer(app.gmap.map, markers, {imagePath: 'img/m'}); //add new markers
-
-								//only fit to boundaries if being called by user not auto update. Otherwise it will interupt when user panning
-								if(fitBounds) app.gmap.fitBounds();
-							});
-						}
-					},
-					eventListener_zzz: function() {
+					eventListener: function() {
 						if(app.page=='map') {
-							$('[title^=REG_]:first').siblings().not('[title^=REG_]').remove();
-							$('[title^=REG_]:first').parent().siblings().remove();
-							$('[title^=REG_]').each(function(){
+							$('[title^="REG|"]:first').siblings().not('[title^="REG|"]').remove();
+							$('[title^="REG|"]:first').parent().siblings().remove();
+							$('[title^="REG|"]').each(function(){
+								
+								var attr = $(this).attr('title').split('|');
+								
 								$(this)
-									.attr('v_registration', $(this).attr('title').replace('REG_',''))
-									.removeAttr('title').click(function(){
+									.attr('v_registration', attr[1])
+									.attr('v_type', attr[2])
+									.addClass('marker')
+									.removeAttr('title')
+									.click(function(){
 										console.log($(this).attr('v_registration'));
 									});
+									
+								$(this).find('img').each(function(){
+									$('img[src="'+$(this).attr('src')+'"]:first').hide();
+								});
 							});
 						}
 						setTimeout(app.gmap.eventListener, 250);
 					},
+					markerHide: function() {
+						if(app) return '|'+app.lov.vehicleType.filter(item => !item.show).map(function(item, i) { return item.code }).join("|")+'|';
+						else return '';
+					},
 					centerMap: function() {
 						app.gmap.map.setZoom(app.gmap.zoom);
 						app.gmap.map.panTo(app.gmap.center);
-					}
+					},
+					showInMap: function(v_registration) {
+						app.gmap.search = v_registration;
+						
+						var show = {};
+						for(i=0; i<app.lov.vehicleType.length; i++) show[app.lov.vehicleType[i].code] = app.lov.vehicleType[i].show;
+						
+						var shownMarkers = app.gmap.markers.filter(marker => {
+							return (marker.v_registration.toUpperCase().indexOf(v_registration.toUpperCase())>-1 && show[marker.v_type]);
+						});
+						
+						console.log("show", show);
+						console.log("shownMarkers", shownMarkers);
+												
+						app.gmap.bounds = new google.maps.LatLngBounds();
+						for(i=0; i<shownMarkers.length; i++ ) app.gmap.bounds.extend(shownMarkers[i].position);
+
+						if(!app.gmap.bounds.isEmpty()) {
+							app.gmap.map.fitBounds(app.gmap.bounds);
+						
+							var listener = google.maps.event.addListener(app.gmap.map, "idle", function() { 
+								if(app.gmap.map.getZoom() > app.gmap.zoom) app.gmap.map.setZoom(app.gmap.zoom); 
+								google.maps.event.removeListener(listener); 
+							});
+						}
+
+						app.page = window.location.hash = 'map';
+					},
 				}
 			},
 			methods: {
 				login: function() {
-					this.page = window.location.hash = 'map';
-				},
-				showInMap: function(v_registration) {
-					this.gmap.search = v_registration;
-					
-					var foundMarkers = app.gmap.markers.filter(marker => { return marker.v_registration.toUpperCase().indexOf(v_registration.toUpperCase())>-1 });
-					app.gmap.bounds = new google.maps.LatLngBounds();
-					for(i=0; i<foundMarkers.length; i++ ) app.gmap.bounds.extend(foundMarkers[i].position);
-
-					if(!app.gmap.bounds.isEmpty()) {
-						app.gmap.map.fitBounds(app.gmap.bounds);
-					
-						var listener = google.maps.event.addListener(app.gmap.map, "idle", function() { 
-							if(app.gmap.map.getZoom() > app.gmap.zoom) app.gmap.map.setZoom(app.gmap.zoom); 
-							google.maps.event.removeListener(listener); 
-						});
-					}
-
 					this.page = window.location.hash = 'map';
 				},
 				getLov: function() {
@@ -268,7 +237,10 @@ db.enablePersistence().then(function() {
 
 				_this.page = (window.location.hash)?(window.location.hash.replace('#','')):'login';
 				
-				_this.$nextTick(function () { _this.gmap.init() });
+				_this.$nextTick(function () {
+					_this.gmap.init();
+					_this.gmap.eventListener();
+				});
 
 				_this.getLov();
 				
@@ -285,11 +257,7 @@ db.enablePersistence().then(function() {
 				page: function (newValue, oldValue) {
 					var _this = this;
 					
-					if(newValue=='map') {
-						//if(_this.lov.vehicleType) _this.gmap.update();
-						//else _this.gmap.updatePending = true;
-					}
-					else if(newValue=='driver') {
+					if(newValue=='driver') {
 						_this.crudDriver('get');
 					}
 					else if(newValue=='smartphone') {

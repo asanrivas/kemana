@@ -12,8 +12,8 @@
 	</head>
 
 	<body>
-		<div id="app">
-		
+		<div class="uk-hidden" id="app">
+				
 			<!-- ========================================================================================== PAGE LOGIN -->
 			<div v-if="page=='login'" id="pg-login">
 				<form id="form-login" class="uk-position-center uk-form-stacked uk-padding uk-text-center uk-card-default bg-white" @keyup.enter="login">
@@ -43,12 +43,13 @@
 					<div class="uk-navbar-center">
 						<ul class="uk-navbar-nav">
 							<li :class="{'uk-active': page=='map'}"><a class="nav-link" href="#map">Map</a></li>
-							<li :class="{'uk-active': page=='driver'}"><a class="nav-link" href="#driver">Driver</a></li>
 							<li :class="{'uk-active': page=='smartphone'}"><a class="nav-link" href="#smartphone">Smartphone</a></li>
 							<li :class="{'uk-active': page=='vehicle'}"><a class="nav-link" href="#vehicle">Vehicle</a></li>
+							<!--
 							<li :class="{'uk-active': page=='maintenance'}"><a class="nav-link" href="#maintenance">Maintenance</a></li>
 							<li :class="{'uk-active': page=='notification'}"><a class="nav-link" href="#notification">Notification</a></li>
-							<li :class="{'uk-active': page=='setting'}"><a class="nav-link" href="#setting">Setting</a></li>
+							-->
+							<li :class="{'uk-active': page=='config'}"><a class="nav-link" href="#config">Config</a></li>
 						</ul>
 					</div>
 					<div class="uk-navbar-right">
@@ -77,37 +78,6 @@
 					<span v-else class="iconmoon icon-x pointer" @click="gmap.search=''; gmap.showInMap(gmap.search);"></span>
 				</div>
 			</div>
-
-			<!-- ========================================================================================== PAGE DRIVER -->
-			<div v-if="page=='driver'" class="uk-container">
-				<div class="uk-card-default uk-padding-small">
-					<table class="uk-table uk-table-divider">
-						<thead>
-							<tr>
-								<th>NAME</th>
-								<th>ID</th>
-								<th>GENDER</th>
-								<th class="uk-table-shrink uk-text-center">ACTION</th>
-							</tr>
-						</thead>
-						<tbody>
-							<tr v-for="item in list.driver">
-								<td>{{item.d_name}}</td>
-								<td>{{item.d_nric}}</td>
-								<td>{{item.lg_desc}}</td>
-								<td class="uk-text-center"><span 
-									class="iconmoon icon-file-text action-icon" uk-tooltip="title: Detail; pos: bottom" uk-toggle="target: #modal-driver" @click="modal.driver=JSON.parse(JSON.stringify(item))"></span><span 
-									class="iconmoon icon-trash-2 action-icon" uk-tooltip="title: Delete; pos: bottom" @click="crudDriver('delete', item.d_id)"></span>
-								</td>
-							</tr>
-						</tbody>
-					</table>
-				</div>
-				
-				<div class="fab">
-					<div class="fab-item" uk-tooltip="title: New; pos: left" uk-toggle="target: #modal-driver" @click="modal.driver={d_id:0}"><span class="uk-position-center iconmoon icon-plus"></span></div>
-				</div>
-			</div>
 			
 			<!-- ========================================================================================== PAGE SMARTPHONE -->
 			<div v-if="page=='smartphone'" class="uk-container">
@@ -116,22 +86,24 @@
 						<thead>
 							<tr>
 								<th>NUMBER</th>
-								<th>DRIVER'S NAME</th>
-								<th>DRIVER'S ID</th>
-								<th>ACTIVATED</th>
+								<th>NAME</th>
+								<th>NRIC</th>
+								<th>GENDER</th>
+								<th>STATUS</th>
 								<th class="uk-table-shrink uk-text-center">ACTION</th>
 							</tr>
 						</thead>
 						<tbody>
 							<tr v-for="item in list.smartphone">
-								<td>{{item.s_number}}</td>
-								<td>{{item.d_name}}</td>
-								<td>{{item.d_nric}}</td>
-								<td :class="{'uk-text-success':item.s_activated=='1', 'uk-text-danger':item.s_activated=='0'}">{{item.s_activated=='1'?'Yes':'No'}}</td>
+								<td>{{item.number}}</td>
+								<td>{{item.name}}</td>
+								<td>{{item.nric}}</td>
+								<td>{{item.gender}}</td>
+								<td :class="{'uk-text-success':item.status=='activated', 'uk-text-danger':item.status!='activated'}">{{item.status}}</td>
 								<td class="uk-text-center"><span 
 									class="iconmoon icon-file-text action-icon" uk-tooltip="title: Detail; pos: bottom" uk-toggle="target: #modal-smartphone" @click="modal.smartphone=JSON.parse(JSON.stringify(item))"></span><span 
-									class="iconmoon icon-link action-icon" uk-tooltip="title: Activate; pos: bottom" @click="generateQr(item.s_uuid)"></span><span 
-									class="iconmoon icon-trash-2 action-icon" uk-tooltip="title: Delete; pos: bottom" @click="crudSmartphone('delete', item.s_id)"></span>
+									class="iconmoon icon-link action-icon uk-hidden" uk-tooltip="title: Activate; pos: bottom" @click="generateQr(item.s_uuid)"></span><span 
+									class="iconmoon icon-trash-2 action-icon" uk-tooltip="title: Delete; pos: bottom" @click="crudSmartphone('delete', item.id)"></span>
 								</td>
 							</tr>
 						</tbody>
@@ -139,7 +111,7 @@
 				</div>
 				
 				<div class="fab">
-					<div class="fab-item" uk-tooltip="title: New; pos: left" uk-toggle="target: #modal-smartphone" @click="modal.smartphone={s_id:0}"><span class="uk-position-center iconmoon icon-plus"></span></div>
+					<div class="fab-item" uk-tooltip="title: New; pos: left" uk-toggle="target: #modal-smartphone" @click="modal.smartphone={status:'New'}"><span class="uk-position-center iconmoon icon-plus"></span></div>
 				</div>
 			</div>
 
@@ -213,23 +185,23 @@
 				</div>
 			</div>
 			
-			<!-- ========================================================================================== PAGE SETTING -->
-			<div v-if="page=='setting'" class="uk-container">
+			<!-- ========================================================================================== PAGE CONFIG -->
+			<div v-if="page=='config'" class="uk-container">
 				<ul uk-accordion class="uk-card-default uk-padding-small">
 					<li>
 						<a class="uk-accordion-title">Map</a>
 						<div class="uk-accordion-content">
 							<form class="uk-form-horizontal">
 								<div class="uk-margin-small">
-									<label class="uk-form-label" for="form-horizontal-text">Default zoom level</label>
+									<label class="uk-form-label" for="form-horizontal-text">Default zoom level ({{gmap.zoom}})</label>
 									<div class="uk-form-controls">
-										<input class="uk-range" name="default-zoom" type="range" value="15" min="1" max="18" step="1">
+										<input class="uk-range" name="default-zoom" type="range" v-model.number="gmap.zoom" min="3" max="18" step="1">
 									</div>
 								</div>
 								<div class="uk-margin-small">
 									<label class="uk-form-label" for="form-horizontal-select">Default center coordinate</label>
 									<div class="uk-form-controls">
-										<input class="uk-input" name="default-coordinate" type="text" placeholder="2.3138884,102.3211577" value="2.3138884,102.3211577">
+										<input class="uk-input" name="default-coordinate" type="text" :placeholder="gmap.center" v-model="gmap.center">
 									</div>
 								</div>
 							</form>
@@ -265,40 +237,6 @@
 			<!-- ========================================================================================== PAGE NOT FOUND -->
 			<div v-if="page=='notfound'" class="uk-container"><img class="uk-width-1-3 uk-position-center uk-margin-medium-top" src="img/404.png"></div>
 
-			<!-- ========================================================================================== MODAL DRIVER -->
-			<div id="modal-driver" uk-modal>
-				<div class="uk-modal-dialog">
-					<div class="uk-modal-body">
-						<form class="uk-form-horizontal">
-							<div class="uk-margin-small">
-								<label class="uk-form-label">ID</label>
-								<div class="uk-form-controls">
-									<input class="uk-input" type="text" placeholder="NRIC or any unique ID" v-model="modal.driver.d_nric">
-								</div>
-							</div>
-							<div class="uk-margin-small">
-								<label class="uk-form-label">Name</label>
-								<div class="uk-form-controls">
-									<input class="uk-input" type="text" placeholder="Driver's name or description" v-model="modal.driver.d_name">
-								</div>
-							</div>
-							<div class="uk-margin-small">
-								<label class="uk-form-label">Gender</label>
-								<div class="uk-form-controls">
-									<select class="uk-select" v-model="modal.driver.lg_id">
-										<option v-for="opt in lov.gender" :value="opt.lg_id">{{opt.lg_desc}}</option>
-									</select>
-								</div>
-							</div>
-						</form>
-					</div>
-					<div class="uk-modal-footer uk-text-right">
-						<button class="uk-button uk-button-default uk-modal-close" type="button">Cancel</button>
-						<button class="uk-button uk-button-primary" type="button" @click="crudDriver('addupdate')">Save</button>
-					</div>
-				</div>
-			</div>
-			
 			<!-- ========================================================================================== MODAL SMARTPHONE -->
 			<div id="modal-smartphone" uk-modal>
 				<div class="uk-modal-dialog">
@@ -307,15 +245,37 @@
 							<div class="uk-margin-small">
 								<label class="uk-form-label">Number</label>
 								<div class="uk-form-controls">
-									<input class="uk-input" type="text" placeholder="019-2105856" data-inputmask="'mask': '999-9999999'" v-model="modal.smartphone.s_number">
+									<input class="uk-input" type="text" placeholder="XXX-XXXXXXX" data-inputmask="'mask': '999-9{7,8}'" v-model="modal.smartphone.number">
 								</div>
 							</div>
 							<div class="uk-margin-small">
-								<label class="uk-form-label">Driver's Name</label>
+								<label class="uk-form-label">Owner's Name</label>
 								<div class="uk-form-controls">
-									<select class="uk-select" v-model="modal.smartphone.d_id">
-										<option v-for="opt in list.driver" :value="opt.d_id">{{opt.d_name}}{{opt.d_nric?' ('+opt.d_nric+')':''}}</option>
+									<input class="uk-input" type="text" v-model="modal.smartphone.name" @keyup="titleCase('modal.smartphone.name')">
+								</div>
+							</div>
+							<div class="uk-margin-small">
+								<label class="uk-form-label">Owner's NRIC</label>
+								<div class="uk-form-controls">
+									<input class="uk-input" type="text" placeholder="XXXXXX-XX-XXXX" data-inputmask="'mask': '999999-99-9999'" v-model="modal.smartphone.nric">
+								</div>
+							</div>
+							<div class="uk-margin-small">
+								<label class="uk-form-label">Owner's Gender</label>
+								<div class="uk-form-controls">
+									<select class="uk-select" v-model="modal.smartphone.gender">
+										<option disabled></option>
+										<option value="Male">Male</option>
+										<option disabled></option>
+										<option value="Male">Female</option>
+										<option disabled></option>
 									</select>
+								</div>
+							</div>
+							<div class="uk-margin-small">
+								<label class="uk-form-label">Status</label>
+								<div class="uk-form-controls">
+									<input class="uk-input" disabled :class="{'uk-text-success':modal.smartphone.status=='activated', 'uk-text-danger':modal.smartphone.status!='activated'}" type="text" v-model="modal.smartphone.status">
 								</div>
 							</div>
 						</form>
@@ -358,7 +318,7 @@
 								<label class="uk-form-label">Condition</label>
 								<div class="uk-form-controls">
 									<select class="uk-select" v-model="modal.vehicle.lvc_id">
-										<option v-for="opt in lov.vehicleCondition" :value="opt.lvc_id">{{opt.lvc_desc}}</option>
+										<option v-for="opt in list.vehicleCondition" :value="opt.lvc_id">{{opt.lvc_desc}}</option>
 									</select>
 								</div>
 							</div>
@@ -423,7 +383,7 @@
 		<script src="lib/uikit-3.0.0/uikit.min.js"></script>
 		<script src="lib/vuejs/vue.js"></script>
 		<script src="lib/neocotic-qrious/qrious.min.js"></script>
-		<script src="lib/RobinHerbots-inputmask/jquery.inputmask.bundle.min.js"></script>
+		<script src="lib/RobinHerbots-inputmask/jquery.inputmask.bundle.min.js" charset="utf-8"></script>
 		<script src="https://www.gstatic.com/firebasejs/5.5.8/firebase.js"></script>
 
 		<script src="app/app.js"></script>

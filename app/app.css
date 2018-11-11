@@ -38,6 +38,15 @@ body.notfound {
 	padding: 10px 5px;
 	cursor: pointer;
 }
+.b-0 {
+	border: 0;
+}
+.pl-0 {
+	padding-left: 0;
+}
+option:disabled {
+	font-size: 5px;
+}
 
 /*============================================================ marker */
 [v_registration] {
@@ -121,6 +130,18 @@ zzz.uk-button:hover {
 }
 .uk-form-label {
 	font-size: 16px;
+}
+.uk-input {
+    padding: 0 10px 1px 10px;
+}
+.uk-input[contenteditable] {
+	height: initial;
+	padding: 0 10px;
+}
+@media (min-width: 960px) {
+	.uk-form-horizontal .uk-form-label {
+		margin-top: 8px;
+	}
 }
 
 /* ================================================================================== FAB */

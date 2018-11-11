@@ -11,6 +11,8 @@ var app = null;
 var db = firebase.firestore();
 db.settings({timestampsInSnapshots: true});
 
+Vue.use(VueMask.VueMaskPlugin);
+
 db.enablePersistence().then(function() {
 	db.collection('config').doc('config').get().then(doc => {
 		app = new Vue({
@@ -22,11 +24,11 @@ db.enablePersistence().then(function() {
 				},
 				list: {
 					smartphone: [],
+					vehicle: [],
 				},
 				modal: {
 					smartphone: {},
 					vehicle: {},
-					maintenance: {},
 				},
 				gmap: {
 					map: null,
@@ -157,39 +159,50 @@ db.enablePersistence().then(function() {
 					var _this = this;
 					
 					db.collection('lov').doc('vehicleType').collection('vehicleType').onSnapshot(function(docs) {
+						app.lov.vehicleType = [];
 						docs.forEach(function(doc) {
-							for(i=0; i<app.lov.vehicleType.length; i++) {
-								if(app.lov.vehicleType[i].code==doc.data().code) {
-									app.lov.vehicleType.splice(i, 1);
-									break;
-								}
-							}
 							app.lov.vehicleType.push({...doc.data(), ...{show:true}});	
 						});
 					});
 					
 					db.collection('smartphone').onSnapshot(function(docs) {
+						app.list.smartphone = [];
 						docs.forEach(function(doc) {
-							for(i=0; i<app.list.smartphone.length; i++) {
-								if(app.list.smartphone[i].id==doc.id) {
-									app.list.smartphone.splice(i, 1);
-									break;
-								}
-							}
 							app.list.smartphone.push({...doc.data(), ...{id:doc.id}});
 						});
 					});
+					
+					db.collection('vehicle').onSnapshot(function(docs) {
+						app.list.vehicle = [];
+						docs.forEach(function(doc) {
+							app.list.vehicle.push(doc.data());
+						});
+					});
 				},
-				titleCase: function(obj) {
-					if(obj=='modal.smartphone.name') {
-						app.modal.smartphone.name = app.modal.smartphone.name.replace(
+				customMask: function(maskType, value) {					
+					if(maskType=='name') {
+						value = value.replace(
 							/\w\S*/g,
 							function(txt) {
 								return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
 							}
 						);
 						
-						app.modal.smartphone.name = app.modal.smartphone.name.replace(' Bin ', ' bin ').replace(' Binti ', ' binti ').replace(' A/p ', ' A/P ').replace(' A/l ', ' A/L ');
+						value = value.replace(' Bin ', ' bin ').replace(' Binti ', ' binti ').replace(' A/p ', ' A/P ').replace(' A/l ', ' A/L ').replace(/\s+/g, ' ');
+						value = value.trim();
+					}
+					else if(maskType=='location') {
+						value = value.replace(/\s+/g, '');
+					}
+					
+					return value;
+				},
+				addRow: function(type) {
+					if(type=='modalVehicle') {
+						app.modal.vehicle.stop.push({
+							desc: '',
+							location: ''
+						});
 					}
 				},
 				// generateQr: function(uuid) {
@@ -234,52 +247,36 @@ db.enablePersistence().then(function() {
 					// });
 				// },
 				crudSmartphone: function(operation, deleteId) {
-					/* dont delete. needed to manipulate data in console
-					db.collection("smartphone").add({
-						gender: 'Male',
-						name: 'Aizal bin Abdul Manan',
-						nric: '790208065313',
-						number: '019-2105856',
-						status: 'New'
-					});
-					*/
 					if(operation=='addupdate') {
 						// ==============================================================================
 						// Notes
 						// ==============================================================================
 						// Tak perlu check unique phone number sebab boleh 1 phone shared by two people
-						
-						var temp = JSON.parse(JSON.stringify(app.modal.smartphone));
-						delete temp.id;
+						// Document IDs generated in Firestore are just client-side keys that are statistically guaranteed to be unique which just boils down to calling AutoId.newId(). To access AutoId.newId(), just call db.collection(collectionName).doc().id
 
-						if(app.modal.smartphone.id) db.collection('smartphone').doc(app.modal.smartphone.id).set(temp);
-						else db.collection("smartphone").add(temp);
+						if(!app.modal.smartphone.id) app.modal.smartphone.id = db.collection('smartphone').doc().id;
+						db.collection('smartphone').doc(app.modal.smartphone.id).set(app.modal.smartphone);
 					}
 					else {
 						db.collection('smartphone').doc(deleteId).delete();
-						for(i=0; i<app.list.smartphone.length; i++) {
-							if(app.list.smartphone[i].id==deleteId) {
-								app.list.smartphone.splice(i, 1);
-								break;
-							}
-						}
 					}
 					
 					$('#modal-smartphone .uk-modal-close').click();
 				},
 				crudVehicle: function(operation, deleteId) {
-					var _this = this;
-					$.getJSON('api/crudVehicle.php?operation='+operation+'&deleteId='+deleteId, _this.modal.vehicle, function(data){
-						_this.list.vehicle = data.vehicle;
-						$('#modal-vehicle .uk-modal-close').click();
-					});
-				},
-				crudMaintenance: function(operation, deleteId) {
-					var _this = this;
-					$.getJSON('api/crudMaintenance.php?operation='+operation+'&deleteId='+deleteId, _this.modal.vehicle, function(data){
-						_this.list.maintenance = data.maintenance;
-						$('#modal-maintenance .uk-modal-close').click();
-					});
+					if(operation=='addupdate') {
+						// ==============================================================================
+						// Notes
+						// ==============================================================================
+						// Perlu check unique tp tak buat lagi
+						
+						db.collection('vehicle').doc(app.modal.vehicle.registration).set(app.modal.vehicle);
+					}
+					else {
+						db.collection('vehicle').doc(deleteId).delete();
+					}
+					
+					$('#modal-vehicle .uk-modal-close').click();
 				},
 			},
 			mounted: function() {
@@ -304,7 +301,6 @@ db.enablePersistence().then(function() {
 			watch: {
 				page: function(newValue, oldValue) {
 					
-					$('[data-inputmask]').inputmask({ "placeholder": "X" });
 					// var _this = this;
 					
 					// if(newValue=='driver') {

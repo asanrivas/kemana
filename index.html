@@ -103,7 +103,7 @@
 								<td class="uk-text-center"><span 
 									class="iconmoon icon-file-text action-icon" uk-tooltip="title: Detail; pos: bottom" uk-toggle="target: #modal-smartphone" @click="modal.smartphone=JSON.parse(JSON.stringify(item))"></span><span 
 									class="iconmoon icon-link action-icon uk-hidden" uk-tooltip="title: Activate; pos: bottom" @click="generateQr(item.s_uuid)"></span><span 
-									class="iconmoon icon-trash-2 action-icon" uk-tooltip="title: Delete; pos: bottom" @click="crudSmartphone('delete', item.id)"></span>
+									class="iconmoon icon-trash action-icon" uk-tooltip="title: Delete; pos: bottom" @click="crudSmartphone('delete', item.id)"></span>
 								</td>
 							</tr>
 						</tbody>
@@ -123,23 +123,19 @@
 							<tr>
 								<th>REG. NO.</th>
 								<th>TYPE</th>
-								<th>CURRENT DRIVER</th>
-								<th>DRIVER'S PHONE</th>
-								<th>CONDITION</th>
+								<th>STOPS</th>
 								<th class="uk-table-shrink uk-text-center">ACTION</th>
 							</tr>
 						</thead>
 						<tbody>
 							<tr v-for="item in list.vehicle">
-								<td>{{item.v_registration}}</td>
-								<td>{{item.desc}}</td>
-								<td>{{item.d_name}}</td>
-								<td>{{item.s_number}}</td>
-								<td :class="item.lvc_class">{{item.lvc_desc}}</td>
+								<td>{{item.registration}}</td>
+								<td>{{item.type}}</td>
+								<td><ol class="timeline"><li v-for="stop in item.stop"><div class="timeline-pointer"></div><div class="timeline-desc"><b>{{stop.desc}}</b><div class="uk-text-small">{{stop.location}}</div></div></li><li></li></ol></td>
 								<td class="uk-text-center"><span 
 									class="iconmoon action-icon icon-file-text" uk-tooltip="title: Detail; pos: bottom" uk-toggle="target: #modal-vehicle" @click="modal.vehicle=JSON.parse(JSON.stringify(item))"></span><span 
-									class="iconmoon action-icon icon-map" uk-tooltip="title: Show In Map; pos: bottom" @click="gmap.showInMap(item.v_registration)"></span><span 
-									class="iconmoon action-icon icon-trash-2" uk-tooltip="title: Delete; pos: bottom" @click="crudVehicle('delete', item.v_id)"></span>
+									class="iconmoon action-icon icon-map" uk-tooltip="title: Show In Map; pos: bottom" @click="gmap.showInMap(item.registration)"></span><span 
+									class="iconmoon action-icon icon-trash" uk-tooltip="title: Delete; pos: bottom" @click="crudVehicle('delete', item.registration)"></span>
 								</td>
 							</tr>
 						</tbody>
@@ -147,7 +143,7 @@
 				</div>
 				
 				<div class="fab">
-					<div class="fab-item" uk-tooltip="title: New; pos: left" uk-toggle="target: #modal-vehicle" @click="modal.vehicle={v_id:0,lvc_id:'good'}"><span class="uk-position-center iconmoon icon-plus"></span></div>
+					<div class="fab-item" uk-tooltip="title: New; pos: left" uk-toggle="target: #modal-vehicle" @click="modal.vehicle={stop:[{desc:'', location:''}]}"><span class="uk-position-center iconmoon icon-plus"></span></div>
 				</div>
 			</div>
 			
@@ -176,7 +172,7 @@
 								<td :class="item.lvc_class">{{item.lvc_desc}}</td>
 								<td class="uk-text-center"><span 
 									class="iconmoon action-icon icon-file-text" uk-tooltip="title: Detail; pos: bottom"></span><span 
-									class="iconmoon action-icon icon-tools-2 set2" uk-tooltip="title: Record New Service; pos: bottom"></span><span 
+									class="iconmoon action-icon icon-tools set2" uk-tooltip="title: Record New Service; pos: bottom"></span><span 
 									class="iconmoon action-icon icon-map" uk-tooltip="title: Show In Map; pos: bottom" @click="gmap.showInMap(item.v_registration)"></span>
 								</td>
 							</tr>
@@ -195,13 +191,13 @@
 								<div class="uk-margin-small">
 									<label class="uk-form-label" for="form-horizontal-text">Default zoom level ({{gmap.zoom}})</label>
 									<div class="uk-form-controls">
-										<input class="uk-range" name="default-zoom" type="range" v-model.number="gmap.zoom" min="3" max="18" step="1">
+										<input class="uk-range" type="range" v-model.number="gmap.zoom" min="3" max="18" step="1">
 									</div>
 								</div>
 								<div class="uk-margin-small">
 									<label class="uk-form-label" for="form-horizontal-select">Default center coordinate</label>
 									<div class="uk-form-controls">
-										<input class="uk-input" name="default-coordinate" type="text" :placeholder="gmap.center" v-model="gmap.center">
+										<input class="uk-input" type="text" :placeholder="gmap.center" v-model="gmap.center">
 									</div>
 								</div>
 							</form>
@@ -245,19 +241,19 @@
 							<div class="uk-margin-small">
 								<label class="uk-form-label">Number</label>
 								<div class="uk-form-controls">
-									<input class="uk-input" type="text" placeholder="XXX-XXXXXXX" data-inputmask="'mask': '999-9{7,8}'" v-model="modal.smartphone.number">
+									<input class="uk-input" type="text" placeholder="XXX-XXXXXXX" v-mask="'###-########'" v-model="modal.smartphone.number">
 								</div>
 							</div>
 							<div class="uk-margin-small">
 								<label class="uk-form-label">Owner's Name</label>
 								<div class="uk-form-controls">
-									<input class="uk-input" type="text" v-model="modal.smartphone.name" @keyup="titleCase('modal.smartphone.name')">
+									<input class="uk-input" type="text" v-model="modal.smartphone.name" @input="modal.smartphone.name = customMask('name', modal.smartphone.name)">
 								</div>
 							</div>
 							<div class="uk-margin-small">
 								<label class="uk-form-label">Owner's NRIC</label>
 								<div class="uk-form-controls">
-									<input class="uk-input" type="text" placeholder="XXXXXX-XX-XXXX" data-inputmask="'mask': '999999-99-9999'" v-model="modal.smartphone.nric">
+									<input class="uk-input" type="text" placeholder="XXXXXX-XX-XXXX" v-mask="'######-##-####'" v-model="modal.smartphone.nric">
 								</div>
 							</div>
 							<div class="uk-margin-small">
@@ -287,7 +283,7 @@
 				</div>
 			</div>
 			
-			<!-- ========================================================================================== MODAL VEHICLE -->
+			<!-- ========================================================================================== MODAL VEHICLE -->	
 			<div id="modal-vehicle" uk-modal>
 				<div class="uk-modal-dialog">
 					<div class="uk-modal-body">
@@ -295,78 +291,40 @@
 							<div class="uk-margin-small">
 								<label class="uk-form-label">Reg. No.</label>
 								<div class="uk-form-controls">
-									<input class="uk-input" type="text" placeholder="Vehicle plat number" v-model="modal.vehicle.v_registration">
+									<input class="uk-input" type="text" v-model="modal.vehicle.registration">
 								</div>
 							</div>
 							<div class="uk-margin-small">
 								<label class="uk-form-label" for="vehicle-type">Type</label>
 								<div class="uk-form-controls">
-									<select class="uk-select" v-model="modal.vehicle.code">
-										<option v-for="opt in lov.vehicleType" :value="opt.code">{{opt.desc}}</option>
+									<select class="uk-select" v-model="modal.vehicle.type">
+										<template v-for="opt in lov.vehicleType">
+											<option disabled></option>
+											<option :value="opt.code">{{opt.desc}}</option>
+										</template>
+										<option disabled></option>
 									</select>
 								</div>
 							</div>
-							<div class="uk-margin-small">
-								<label class="uk-form-label" for="vehicle-type">Current Driver</label>
-								<div class="uk-form-controls">
-									<select class="uk-select" v-model="modal.vehicle.d_id">
-										<option v-for="opt in list.driver" :value="opt.d_id">{{opt.d_name}}{{opt.d_nric?' ('+opt.d_nric+')':''}}</option>
-									</select>
-								</div>
+							<div class="uk-margin-medium">
+								<label class="uk-form-label" for="vehicle-type">Stops</label>
 							</div>
-							<div class="uk-margin-small">
-								<label class="uk-form-label">Condition</label>
-								<div class="uk-form-controls">
-									<select class="uk-select" v-model="modal.vehicle.lvc_id">
-										<option v-for="opt in list.vehicleCondition" :value="opt.lvc_id">{{opt.lvc_desc}}</option>
-									</select>
-								</div>
-							</div>
-							<div class="uk-margin-small">
-								<label class="uk-form-label" for="vehicle-make">Make</label>
-								<div class="uk-form-controls">
-									<input class="uk-input" id="vehicle-make" type="text" placeholder="Proton">
-								</div>
-							</div>
-							<div class="uk-margin-small">
-								<label class="uk-form-label" for="vehicle-model">Model</label>
-								<div class="uk-form-controls">
-									<input class="uk-input" id="vehicle-model" type="text" placeholder="Model">
-								</div>
-							</div>
-							<div class="uk-margin-small">
-								<label class="uk-form-label" for="vehicle-year">Year</label>
-								<div class="uk-form-controls">
-									<input class="uk-input" id="vehicle-year" type="text" placeholder="2012">
-								</div>
-							</div>
-							<div class="uk-margin-small">
-								<label class="uk-form-label" for="vehicle-cc">Engine Capacity</label>
-								<div class="uk-form-controls">
-									<input class="uk-input" id="vehicle-cc" type="text" placeholder="1468 cc">
-								</div>
-							</div>
-							<div class="uk-margin-small">
-								<label class="uk-form-label" for="vehicle-transmission">Transmission</label>
-								<div class="uk-form-controls">
-									<select class="uk-select">
-										<option value="automatic">Automatic</option>
-										<option value="manual">Manual</option>
-									</select>
-								</div>
-							</div>
-							<div class="uk-margin-small">
-								<label class="uk-form-label" for="vehicle-mileage">Mileage (KM)</label>
-								<div class="uk-form-controls">
-									<input class="uk-input" id="vehicle-mileage" type="text" placeholder="270000">
-								</div>
-							</div>
-							<div class="uk-margin-small">
-								<label class="uk-form-label" for="vehicle-colour">Colour</label>
-								<div class="uk-form-controls">
-									<input class="uk-input" id="vehicle-colour" type="text" placeholder="Orange">
-								</div>
-							</div>
+							<table class="uk-table">
+								<thead>
+									<tr>
+										<th>LOCATION</th>
+										<th>DESCRIPTION</th>
+										<th class="uk-table-shrink"><span class="iconmoon icon-plus action-icon" uk-tooltip="title: Add; pos: bottom" @click="addRow('modalVehicle')"></span></th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr v-for="(stop, index) in modal.vehicle.stop">
+										<td class="uk-padding-remove"><input class="uk-input" type="text" v-model="stop.location" @input="stop.location = customMask('location', stop.location)"></td>
+										<td class="uk-padding-remove"><input class="uk-input" type="text" v-model="stop.desc"></td>
+										<td class="uk-padding-remove uk-position-relative"><span class="iconmoon icon-trash action-icon uk-position-center" uk-tooltip="title: Delete; pos: bottom" @click="modal.vehicle.stop.splice(index,1)"></span></td>
+									</tr>
+								</tbody>
+							</table>
 						</form>
 					</div>
 					<div class="uk-modal-footer uk-text-right">
@@ -383,9 +341,8 @@
 		<script src="lib/uikit-3.0.0/uikit.min.js"></script>
 		<script src="lib/vuejs/vue.js"></script>
 		<script src="lib/neocotic-qrious/qrious.min.js"></script>
-		<script src="lib/RobinHerbots-inputmask/jquery.inputmask.bundle.min.js" charset="utf-8"></script>
+		<script src="lib/v-mask/v-mask.min.js"></script>
 		<script src="https://www.gstatic.com/firebasejs/5.5.8/firebase.js"></script>
-
 		<script src="app/app.js"></script>
 
 		<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAuK6RCR8833Ei9sbZ5Y7it9ananiJxYSg" async defer></script>

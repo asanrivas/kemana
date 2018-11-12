@@ -51,7 +51,7 @@ db.enablePersistence().then(function() {
 
 								//================================================================================================ map event listener
 								app.gmap.map.addListener('rightclick', function(event) {
-									console.log(event.latLng.lat().toFixed(6)+','+event.latLng.lng().toFixed(6));
+									console.log(event.latLng.lat().toFixed(8)+','+event.latLng.lng().toFixed(8));
 								});
 
 								//================================================================================================ get fleet
@@ -64,7 +64,6 @@ db.enablePersistence().then(function() {
 											foundMarker.setPosition(new google.maps.LatLng(Number(doc.data().location.split(',')[0]), Number(doc.data().location.split(',')[1])));
 										}
 										else {
-											console.log(doc.id, doc.data(), doc.data().location.split(','));
 											app.gmap.markers.push(
 												new google.maps.Marker({
 													position: {
@@ -199,7 +198,7 @@ db.enablePersistence().then(function() {
 				},
 				addRow: function(type) {
 					if(type=='modalVehicle') {
-						app.modal.vehicle.stop.push({
+						app.modal.vehicle.checkpoint.push({
 							desc: '',
 							location: ''
 						});

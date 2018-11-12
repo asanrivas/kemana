@@ -13,7 +13,28 @@
 
 /* ================================================================================== tracking */
 #pg-tracking {
-	background: #2ECC71;
+	background: #BD59D4;
+}
+#pg-tracking .uk-button-secondary {
+	background: #FFE93B;
+	color: #333;
+	border-radius: 8px;
+}
+#pg-tracking .uk-button-secondary:disabled {
+	background: #E0E0E0;
+}
+#pg-tracking .uk-button-danger {
+	border-radius: 8px;
+}
+#pg-tracking .uk-select {
+	background: transparent;
+    border: 3px solid white;
+	color: white;
+	border-radius: 8px;
+	font-weight: bold;
+	
+	text-align-last: center;
+	padding-left: 20px;
 }
 .vehicle {
 	animation: bounce 100ms infinite alternate;

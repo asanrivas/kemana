@@ -1,0 +1,89 @@
+<!DOCTYPE HTML>
+<html>
+	<head>
+		<meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no, width=device-width">
+		<title>Jejak</title>
+		<link rel="icon" type="image/png" href="../img/favicon.png">
+
+		<link rel="stylesheet" href="../lib/uikit-3.0.0/uikit.min.css">
+		<link rel="stylesheet" href="../font/icomoon/style.css">
+		<link rel="stylesheet" href="../app/app.css">
+		<link rel="stylesheet" href="app/app.css">
+	</head>
+
+	<body>
+		<div id="app" class="uk-hidden">
+
+			<!-- ========================================================================================== PAGE WELCOME -->
+			<div v-if="page=='welcome'"  id="pg-welcome">
+				<img src="img/bus.png" style="width:75%; position:absolute; top:0; right:0; opacity:.7;">
+				<div class="uk-position-center uk-padding uk-text-center">
+					<img src="../img/logo.svg" class="uk-margin" style="height:50px">
+					<div class="uk-margin-large">Welcome. Before you start, you need to activate your smartphone with the core system.</div>
+					
+					<form class="uk-form-stacked uk-padding">
+						<div class="uk-margin">
+							<label class="uk-form-label">Phone Number</label>
+							<div class="uk-form-controls">
+								<input class="uk-input uk-text-center" type="text" placeholder="XXX-XXXXXXX" v-mask="'###-########'" v-model="number">
+							</div>
+						</div>
+						<div class="uk-margin">
+							<label class="uk-form-label">Activation Code</label>
+							<div class="uk-form-controls">
+								<input class="uk-input uk-text-center" type="text" v-model="activationCode">
+							</div>
+						</div>
+						<div class="uk-margin">
+							<button type="button" class="uk-button uk-button-primary uk-width-1-1" @click="activate">Activate</button>
+						</div>
+					</form>
+				</div>
+			</div>
+			
+			<!-- ========================================================================================== PAGE TRACKER -->
+			<div v-if="page=='tracking'"  id="pg-tracking">
+				
+				<a class="uk-padding-small uk-position-top-right text-white" @click="logout"><span class="iconmoon icon-unlock"></span></a>
+		
+				<div class="uk-position-center uk-padding uk-text-center uk-width-1-1" style="top:25%">
+					<form class="uk-form-stacked uk-padding">
+						<div class="uk-margin">
+							<label class="uk-form-label" style="color:white">Which vehicle are you driving?</label>
+							<div class="uk-form-controls">
+								<select class="uk-select" v-model="selectedVehicle.registration" :disabled="tracking.on">
+									<option v-for="opt in list.vehicle" :value="opt.registration">{{opt.registration}}</option>
+								</select>
+							</div>
+						</div>
+						<div class="uk-margin">
+							<label class="uk-form-label" style="color:white">Which checkpoint are you heading?</label>
+							<div class="uk-form-controls">
+								<select id="headingCheckpoint" class="uk-select" v-model="headingCheckpoint" :disabled="!selectedVehicle.registration">
+									<option v-for="(opt, index) in selectedVehicle.checkpoint" :value="opt.location" :index="index">{{opt.desc}}</option>
+								</select>
+							</div>
+						</div>
+						<div class="uk-margin">
+							<button type="button" class="uk-button uk-width-1-1" :class="{'uk-button-danger':tracking.on, 'uk-button-secondary':!tracking.on}" @click="tracking.on=(selectedVehicle.registration && headingCheckpoint)?!tracking.on:tracking.on" :disabled="!selectedVehicle.registration || !headingCheckpoint">{{tracking.on?'Stop':'Start'}} Tracking</button>
+						</div>
+					</form>
+				</div>
+				
+				<img class="uk-position-center" :class="{'vehicle':tracking.on}" src="img/bus.svg">
+				<img class="road uk-position-center" :class="{'uk-hidden':!tracking.on}" src="img/road.svg">
+				
+				<div id="logOnScreen" class="uk-position-center uk-padding uk-text-center uk-width-1-1" style="top:calc(100% - 30px); color:white">...</div>
+			</div>
+
+		</div>
+
+		<script src="../lib/jquery-3.3.1/jquery.min.js"></script>
+		<script src="../lib/moment/moment.min.js"></script>
+		<script src="../lib/uikit-3.0.0/uikit.min.js"></script>
+		<script src="../lib/vuejs/vue.js"></script>
+		<script src="../lib/v-mask/v-mask.min.js"></script>
+		<script src="https://www.gstatic.com/firebasejs/5.5.8/firebase.js"></script>
+		<script src="app/app.js"></script>
+	</body>
+</html>

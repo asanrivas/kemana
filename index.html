@@ -2,7 +2,7 @@
 <html>
 	<head>
 		<meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no, width=device-width">
-		<title>Fleet!</title>
+		<title>Jejak</title>
 		<link rel="icon" type="image/png" href="img/favicon.png">
 
 		<link rel="stylesheet" href="lib/uikit-3.0.0/uikit.min.css">
@@ -123,7 +123,7 @@
 							<tr>
 								<th>REG. NO.</th>
 								<th>TYPE</th>
-								<th>STOPS</th>
+								<th>CHECKPOINT</th>
 								<th class="uk-table-shrink uk-text-center">ACTION</th>
 							</tr>
 						</thead>
@@ -131,7 +131,7 @@
 							<tr v-for="item in list.vehicle">
 								<td>{{item.registration}}</td>
 								<td>{{item.type}}</td>
-								<td><ol class="timeline"><li v-for="stop in item.stop"><div class="timeline-pointer"></div><div class="timeline-desc"><b>{{stop.desc}}</b><div class="uk-text-small">{{stop.location}}</div></div></li><li></li></ol></td>
+								<td><ol class="timeline"><li v-for="checkpoint in item.checkpoint"><div class="timeline-pointer"></div><div class="timeline-desc"><b>{{checkpoint.desc}}</b><div class="uk-text-small">{{checkpoint.location}}</div></div></li><li></li></ol></td>
 								<td class="uk-text-center"><span 
 									class="iconmoon action-icon icon-file-text" uk-tooltip="title: Detail; pos: bottom" uk-toggle="target: #modal-vehicle" @click="modal.vehicle=JSON.parse(JSON.stringify(item))"></span><span 
 									class="iconmoon action-icon icon-map" uk-tooltip="title: Show In Map; pos: bottom" @click="gmap.showInMap(item.registration)"></span><span 
@@ -143,7 +143,7 @@
 				</div>
 				
 				<div class="fab">
-					<div class="fab-item" uk-tooltip="title: New; pos: left" uk-toggle="target: #modal-vehicle" @click="modal.vehicle={stop:[{desc:'', location:''}]}"><span class="uk-position-center iconmoon icon-plus"></span></div>
+					<div class="fab-item" uk-tooltip="title: New; pos: left" uk-toggle="target: #modal-vehicle" @click="modal.vehicle={checkpoint:[{desc:'', location:''}]}"><span class="uk-position-center iconmoon icon-plus"></span></div>
 				</div>
 			</div>
 			
@@ -307,7 +307,7 @@
 								</div>
 							</div>
 							<div class="uk-margin-medium">
-								<label class="uk-form-label" for="vehicle-type">Stops</label>
+								<label class="uk-form-label" for="vehicle-type">Checkpoint</label>
 							</div>
 							<table class="uk-table">
 								<thead>
@@ -318,10 +318,10 @@
 									</tr>
 								</thead>
 								<tbody>
-									<tr v-for="(stop, index) in modal.vehicle.stop">
-										<td class="uk-padding-remove"><input class="uk-input" type="text" v-model="stop.location" @input="stop.location = customMask('location', stop.location)"></td>
-										<td class="uk-padding-remove"><input class="uk-input" type="text" v-model="stop.desc"></td>
-										<td class="uk-padding-remove uk-position-relative"><span class="iconmoon icon-trash action-icon uk-position-center" uk-tooltip="title: Delete; pos: bottom" @click="modal.vehicle.stop.splice(index,1)"></span></td>
+									<tr v-for="(checkpoint, index) in modal.vehicle.checkpoint">
+										<td class="uk-padding-remove"><input class="uk-input" type="text" v-model="checkpoint.location" @input="checkpoint.location = customMask('location', checkpoint.location)"></td>
+										<td class="uk-padding-remove"><input class="uk-input" type="text" v-model="checkpoint.desc"></td>
+										<td class="uk-padding-remove uk-position-relative"><span class="iconmoon icon-trash action-icon uk-position-center" uk-tooltip="title: Delete; pos: bottom" @click="modal.vehicle.checkpoint.splice(index,1)"></span></td>
 									</tr>
 								</tbody>
 							</table>

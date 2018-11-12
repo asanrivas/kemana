@@ -4,6 +4,7 @@
 		<meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no, width=device-width">
 		<title>Geolocation</title>
 		<script src='https://ajax.googleapis.com/ajax/libs/jquery/2.1.0/jquery.min.js'></script>
+		<script src='https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.22.2/moment.min.js'></script>
 	</head>
 
 	<body>
@@ -11,33 +12,40 @@
 		
 		<script>
 			var x = document.getElementById("demo");
-			getLocation();
+			var tracking = [];
+			var previous = null;
+			setInterval('getLocation', 5000);
 			
 			function getLocation() {
 				if (navigator.geolocation) {
-					navigator.geolocation.getCurrentPosition(showPosition1);
-					navigator.geolocation.watchPosition(showPosition2);
+					navigator.geolocation.getCurrentPosition(recordPosition);
+					//navigator.geolocation.watchPosition(showPosition2);
 				} else {
 					x.innerHTML = "Geolocation is not supported by this browser.";
 				}
 			}
+
+			function recordPosition(current) {
 			
-			function showPosition1(position) {
-				x.innerHTML +=
-					"<br><br><b>First read</b>" +
-					"<br>Latitude: " + position.coords.latitude + 
-					"<br>Longitude: " + position.coords.longitude+
-					"<br>Time: " + new Date()
+				if(previous) {
+					var distance = Math.sqrt(Math.pow(current.coords.latitude-previous.coords.latitude, 2) + Math.pow(current.coords.longitude-previous.coords.longitude, 2));
+					var speed = (distance/5)*360;
+					x.innerHTML +=
+						"<br><br><b>Watch read</b>" +
+						"<br>Latitude: " + current.coords.latitude + 
+						"<br>Longitude: " + current.coords.longitude+
+						"<br>Speed: " + speed +
+						"<br>Time: " + moment().format('DD/MM/YYYY hh:mm:ss');
+				}
+				
+				previous = {
+					coords: {
+						latitude: current.coords.latitude,
+						longitude: current.coords.longitude
+					},
+				};
 			}
 			
-			function showPosition2(position) {
-				x.innerHTML +=
-					"<br><br><b>Watch read</b>" +
-					"<br>Latitude: " + position.coords.latitude + 
-					"<br>Longitude: " + position.coords.longitude+
-					"<br>Speed: " + position.coords.speed*360 +
-					"<br>Time: " + new Date()
-			}
 		</script>
 	</body>
 </html>

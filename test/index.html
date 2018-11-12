@@ -11,31 +11,33 @@
 		<div id="demo"></div>
 		
 		<script>
-			var x = document.getElementById("demo");
-			var tracking = [];
+			var current = null;
 			var previous = null;
-			setInterval('getLocation', 5000);
+			
+			getLocation();
+			setInterval(recordPosition, 5000);
 			
 			function getLocation() {
 				if (navigator.geolocation) {
-					navigator.geolocation.getCurrentPosition(recordPosition);
-					//navigator.geolocation.watchPosition(showPosition2);
+					//navigator.geolocation.getCurrentPosition(recordPosition);
+					navigator.geolocation.watchPosition(function(crnt){ current = crnt });
 				} else {
 					x.innerHTML = "Geolocation is not supported by this browser.";
 				}
 			}
 
-			function recordPosition(current) {
-			
+			function recordPosition() {
 				if(previous) {
 					var distance = Math.sqrt(Math.pow(current.coords.latitude-previous.coords.latitude, 2) + Math.pow(current.coords.longitude-previous.coords.longitude, 2));
 					var speed = (distance/5)*360;
-					x.innerHTML +=
+					$('#demo').html(
+						$('#demo').html()+
 						"<br><br><b>Watch read</b>" +
 						"<br>Latitude: " + current.coords.latitude + 
 						"<br>Longitude: " + current.coords.longitude+
 						"<br>Speed: " + speed +
-						"<br>Time: " + moment().format('DD/MM/YYYY hh:mm:ss');
+						"<br>Time: " + moment().format('DD/MM/YYYY hh:mm:ss')
+					);
 				}
 				
 				previous = {

@@ -15,7 +15,7 @@
 			var previous = null;
 			
 			getLocation();
-			setInterval(recordPosition, 5000);
+			setInterval(recordPosition, 10000);
 			
 			function getLocation() {
 				if (navigator.geolocation) {
@@ -29,7 +29,7 @@
 			function recordPosition() {
 				if(previous) {
 					var distance = getDistanceKM(current.coords.latitude, current.coords.longitude, previous.coords.latitude, previous.coords.longitude);
-					var speed = (distance/5)*360;
+					var speed = (distance/10)*360;
 					$('#demo').html(
 						$('#demo').html()+
 						"<br><br><b>Watch read</b>" +

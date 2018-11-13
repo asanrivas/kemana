@@ -120,6 +120,8 @@ db.enablePersistence().then(function() {
 							app.geolocation.previousLatitude = app.geolocation.currentLatitude;
 							app.geolocation.previousLongitude = app.geolocation.currentLongitude;
 
+							$('#logTime10').html(moment().format('hh:mm:ss'));
+							$('#logLocationPrev').html(app.geolocation.previousLatitude + ',' + app.geolocation.previousLongitude);
 							$('#logSpeed').html(speed);
 							$('#logDistance').html(distance);
 							

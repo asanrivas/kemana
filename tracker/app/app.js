@@ -27,6 +27,8 @@ db.enablePersistence().then(function() {
 				activationCode: localStorage.getItem('JEJAK_ACTIVATION_CODE'),
 				geolocation: {
 					updateInterval: doc.data().updateInterval,
+					currentLatitude: null,
+					currentLongitude: null,
 					previousLatitude: null,
 					previousLongitude: null,
 				},
@@ -74,63 +76,54 @@ db.enablePersistence().then(function() {
 					
 					if(navigator.geolocation) {
 						
-						//================================================================ track checkpoint arrival every 2 second
-						setInterval(function(){
-							navigator.geolocation.getCurrentPosition(
-								function(position){
-
-									if($('#headingCheckpoint').val()) {
-										
-										//========================================================================== check current distance to headingCheckpoint
-										var d = app.getDistanceInKM(position.coords.latitude, position.coords.longitude, Number($('#headingCheckpoint option:selected').val().split(',')[0]), Number($('#headingCheckpoint option:selected').val().split(',')[1]));
-										
-										$('#logVersion').html(16);
-										$('#logTime').html(moment().format('hh:mm:ss'));
-										$('#logLocation').html(position.coords.latitude + ',' + position.coords.longitude);
-										$('#logAccuracy').html(position.coords.accuracy+' m');
-										$('#logDistance2CP').html(d);
-										
-										//========================================================================== 10meter considered arrived
-										if(d<0.01) {
-											var next = (Number($('#headingCheckpoint option:selected').attr('index'))+1) % app.selectedVehicle.checkpoint.length;
-											$('#headingCheckpoint').prop('selectedIndex', next).change();
-											app.markPreviousCheckpoint();
-										}
+						//================================================================ watch position in realtime
+						navigator.geolocation.watchPosition(
+							function(position){
+								console.log('start watchPosition');
+								app.geolocation.currentLatitude = position.coords.latitude;
+								app.geolocation.currentLongitude = position.coords.longitude;
+								
+								//================================================================ track checkpoint arrival
+								if($('#headingCheckpoint').val()) {
+									//========================================================================== check current distance to headingCheckpoint
+									var distance = app.getDistanceInKM(position.coords.latitude, position.coords.longitude, Number($('#headingCheckpoint option:selected').val().split(',')[0]), Number($('#headingCheckpoint option:selected').val().split(',')[1]));
+									
+									$('#logVersion').html(17);
+									$('#logTime').html(moment().format('hh:mm:ss'));
+									$('#logLocation').html(position.coords.latitude + ',' + position.coords.longitude);
+									$('#logAccuracy').html(position.coords.accuracy+' m');
+									$('#logDistance2CP').html(distance);
+									
+									//========================================================================== 10meter considered arrived
+									if(distance<0.01) {
+										var next = (Number($('#headingCheckpoint option:selected').attr('index'))+1) % app.selectedVehicle.checkpoint.length;
+										$('#headingCheckpoint').prop('selectedIndex', next).change();
+										app.markPreviousCheckpoint();
 									}
-								},
-								function(error){
-									$('#logLocation').html('Error '+error.code);
-								},
-								{maximumAge:60000, timeout:5000, enableHighAccuracy:true}
-							);
-						}, 2000);
-						
+								}
+							},
+							function(error){
+								$('#logLocation').html('Error '+error.code);
+							},
+							{maximumAge:0, timeout:Infinity, enableHighAccuracy:true}
+						);
+
 						//================================================================ update current position every "app.updateInterval" seconds
 						setInterval(function(){
-							navigator.geolocation.getCurrentPosition(
-								function(position){
+							//========================================================================== if possible, get speed
+							var distance = speed = 0;
+							if(app.geolocation.previousLatitude) {
+								distance = app.getDistanceInKM(app.geolocation.currentLatitude, app.geolocation.currentLongitude, app.geolocation.previousLatitude, app.geolocation.previousLongitude);
+								speed = (distance/app.geolocation.updateInterval)*360;
+							}
+							
+							app.geolocation.previousLatitude = app.geolocation.currentLatitude;
+							app.geolocation.previousLongitude = app.geolocation.currentLongitude;
 
-									//========================================================================== if possible, get speed
-									var distance = speed = 0;
-									if(app.geolocation.previousLatitude) {
-										distance = app.getDistanceInKM(position.coords.latitude, position.coords.longitude, app.geolocation.previousLatitude, app.geolocation.longitude);
-										speed = (distance/app.geolocation.updateInterval)*360;
-									}
-									
-									app.geolocation.previousLatitude = position.coords.latitude;
-									app.geolocation.longitude = position.coords.longitude;
-									
-									
-									$('#logSpeed').html(speed);
-									$('#logDistance').html(distance);
-									
-									//update firebase current and history
-								},
-								function(error){
-									$('#logLocation').html('Error '+error.code);
-								},
-								{maximumAge:60000, timeout:5000, enableHighAccuracy:true}
-							);
+							$('#logSpeed').html(speed);
+							$('#logDistance').html(distance);
+							
+							//update firebase current and history
 						}, app.geolocation.updateInterval*1000);
 
 						

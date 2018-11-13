@@ -72,25 +72,46 @@ db.enablePersistence().then(function() {
 					var app = this;
 					
 					if(navigator.geolocation) {
-						navigator.geolocation.watchPosition(
-							function(crnt) {
-								app.tracking.current = crnt;
-								// app.arrivingCheckpoint();
-							},
-							app.errorCallback_highAccuracy,
-							{ maximumAge:0, timeout:10000, enableHighAccuracy:true }
-						);
+						
+						var _pLat = _pLng = _speed = _distance = 0;
+						
+						setInterval(function(){
+							navigator.geolocation.getCurrentPosition(
+								function(position){
+									
+									if(_pLat) {
+										_distance = app.getDistanceInKM(position.coords.latitude, position.coords.longitude, _pLat, _pLng);
+										_speed = (distance/5)*360;
+									}
+									
+									_pLat = position.coords.latitude;
+									_pLng = position.coords.longitude;
+									
+									$('#logLocation').html(position.coords.latitude + ',' + position.coords.longitude);
+									$('#logAccuracy').html(position.coords.accuracy+' m');
+									$('#logSpeed').html(_speed);
+									$('#logDistance').html(_distance+' km');
+								},
+								function(error){
+									$('#logSpeed').html('Error '+error.code);
+								},
+								{maximumAge:0, timeout:5000, enableHighAccuracy:true}
+							);
+						}, 5000);
 
-						setInterval(function(){ app.updatePosition() }, app.intervalUpdatePosition);
-						setInterval(function(){ app.updateSpeed() }, app.intervalUpdateSpeed);
-						setInterval(function(){ app.updateHistory() }, app.intervalUpdateHistory);
+						
+						// navigator.geolocation.watchPosition(function(crnt){
+							// app.tracking.current = crnt;
+							// app.arrivingCheckpoint();
+						// });
+
+						// setInterval(function(){ app.updatePosition() }, app.intervalUpdatePosition);
+						// setInterval(function(){ app.updateSpeed() }, app.intervalUpdateSpeed);
+						// setInterval(function(){ app.updateHistory() }, app.intervalUpdateHistory);
 					} else {
 						$('#logOnScreen').html('Geolocation is not supported by your phone.');
 					}
 					
-				},
-				errorCallback_highAccuracy: function() {
-					$('#logSpeed').html('Error '+error.code);
 				},
 				arrivingCheckpoint: function() {
 					if(app.tracking.on && app.tracking.current && app.headingCheckpoint) {
@@ -102,7 +123,7 @@ db.enablePersistence().then(function() {
 						
 						//========================================================================== check current distance to headingCheckpoint
 						var d = app.getDistanceInKM(app.tracking.current.coords.latitude, app.tracking.current.coords.longitude, Number(app.headingCheckpoint.split(',')[0]), Number(app.headingCheckpoint.split(',')[1]));
-						$('#logD2CP').html(d+' KM');
+						$('#logOnScreen').html(d+' KM');
 						
 						//========================================================================== 10meter considered arrived
 						if(d<0.01) {
@@ -121,10 +142,10 @@ db.enablePersistence().then(function() {
 							type: app.selectedVehicle.type
 						};
 						
-						// db.collection('tracking').doc('current').collection('current').doc(app.selectedVehicle.registration).update(data)
-						// .catch((error) => {
-							// db.collection('tracking').doc('current').collection('current').doc(app.selectedVehicle.registration).set(data)
-						// });
+						db.collection('tracking').doc('current').collection('current').doc(app.selectedVehicle.registration).update(data)
+						.catch((error) => {
+							db.collection('tracking').doc('current').collection('current').doc(app.selectedVehicle.registration).set(data)
+						});
 					}
 				},
 				updateSpeed: function() {
@@ -134,13 +155,10 @@ db.enablePersistence().then(function() {
 							var distance = app.getDistanceInKM(app.tracking.current.coords.latitude, app.tracking.current.coords.longitude, app.tracking.previous.coords.latitude, app.tracking.previous.coords.longitude);
 							app.tracking.speed = (distance/app.intervalUpdateSpeed)*360;
 							
-							$('#logSpeed').html(app.tracking.speed);
-							$('#logDistance').html((distance*1000)+' meter');
-							
-							// db.collection('tracking').doc('current').collection('current').doc(app.selectedVehicle.registration).update({ speed: app.tracking.speed })
-							// .catch((error) => {
-								// db.collection('tracking').doc('current').collection('current').doc(app.selectedVehicle.registration).set({ speed: app.tracking.speed })
-							// });
+							db.collection('tracking').doc('current').collection('current').doc(app.selectedVehicle.registration).update({ speed: app.tracking.speed })
+							.catch((error) => {
+								db.collection('tracking').doc('current').collection('current').doc(app.selectedVehicle.registration).set({ speed: app.tracking.speed })
+							});
 						}
 						
 						app.tracking.previous = {
@@ -153,12 +171,12 @@ db.enablePersistence().then(function() {
 				},
 				updateHistory: function() {
 					if(app.tracking.on && app.tracking.current) {
-						// db.collection('tracking').doc('history').collection(moment().format('YYYY')).doc(app.selectedVehicle.registration).collection(app.selectedVehicle.registration).add({
-							// location: app.tracking.current.coords.latitude+','+app.tracking.current.coords.longitude,
-							// speed: app.tracking.speed,
-							// timestamp: moment().format('YYYYMMDDhhmmss'),
-							// type: app.selectedVehicle.type
-						// });
+						db.collection('tracking').doc('history').collection(moment().format('YYYY')).doc(app.selectedVehicle.registration).collection(app.selectedVehicle.registration).add({
+							location: app.tracking.current.coords.latitude+','+app.tracking.current.coords.longitude,
+							speed: app.tracking.speed,
+							timestamp: moment().format('YYYYMMDDhhmmss'),
+							type: app.selectedVehicle.type
+						});
 					}
 				},
 				getDistanceInKM: function(lat1, lon1, lat2, lon2) {

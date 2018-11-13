@@ -131,7 +131,7 @@
 							<tr v-for="item in list.vehicle">
 								<td>{{item.registration}}</td>
 								<td>{{item.type}}</td>
-								<td><ol class="timeline"><li v-for="checkpoint in item.checkpoint"><div class="timeline-pointer"></div><div class="timeline-desc"><b>{{checkpoint.desc}}</b><div class="uk-text-small">{{checkpoint.location}}</div></div></li><li></li></ol></td>
+								<td><ol class="timeline"><li v-for="checkpoint in item.checkpoint"><div class="timeline-pointer" :class="{'timeline-arrived':checkpoint.arrived}"></div><div class="timeline-desc"><b>{{checkpoint.desc}}</b><div class="uk-text-small">{{checkpoint.location}}</div></div></li><li></li></ol></td>
 								<td class="uk-text-center"><span 
 									class="iconmoon action-icon icon-file-text" uk-tooltip="title: Detail; pos: bottom" uk-toggle="target: #modal-vehicle" @click="modal.vehicle=JSON.parse(JSON.stringify(item))"></span><span 
 									class="iconmoon action-icon icon-map" uk-tooltip="title: Show In Map; pos: bottom" @click="gmap.showInMap(item.registration)"></span><span 

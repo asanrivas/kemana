@@ -25,23 +25,19 @@ db.enablePersistence().then(function() {
 				page: null,
 				number: null,
 				activationCode: localStorage.getItem('JEJAK_ACTIVATION_CODE'),
+				trackingOn: false,
 				geolocation: {
 					updateInterval: doc.data().updateInterval,
 					currentLatitude: null,
 					currentLongitude: null,
 					previousLatitude: null,
 					previousLongitude: null,
+					speed: null,
 				},
 				selectedVehicle: {
 					registration: null,
 					checkpoint: [],
 					type: null
-				},
-				tracking: {
-					on: false,
-					speed: 0,
-					current: null,
-					previous: null
 				},
 				list: {
 					vehicle: [],
@@ -88,19 +84,20 @@ db.enablePersistence().then(function() {
 								}
 								
 								//================================================================ track checkpoint arrival
-								if($('#headingCheckpoint').val()) {
+								if(app.trackingOn) {
 									//========================================================================== check current distance to headingCheckpoint
 									var distance = app.getDistanceInKM(position.coords.latitude, position.coords.longitude, Number($('#headingCheckpoint option:selected').val().split(',')[0]), Number($('#headingCheckpoint option:selected').val().split(',')[1]));
 									
-									$('#logVersion').html(22);
-									$('#logTime').html(moment().format('hh:mm:ss'));
+									$('#logVersion').html(24);
+									$('#logTime').html(moment().format('hh:mm:ssA'));
 									$('#logLocation').html(position.coords.latitude + ',' + position.coords.longitude);
 									$('#logAccuracy').html(position.coords.accuracy+' m');
 									$('#logDistance2CP').html(distance);
 									
 									//========================================================================== 10meter considered arrived
 									if(distance<0.01) {
-										var next = (Number($('#headingCheckpoint option:selected').attr('index'))+1) % app.selectedVehicle.checkpoint.length;
+										//var next = ($('#headingCheckpoint')[0].selectedIndex+1) % app.selectedVehicle.checkpoint.length;
+										var next = $('#headingCheckpoint')[0].selectedIndex + 1;
 										$('#headingCheckpoint').prop('selectedIndex', next).change();
 										app.markPreviousCheckpoint();
 									}
@@ -115,113 +112,77 @@ db.enablePersistence().then(function() {
 						//================================================================ update current position every "app.updateInterval" seconds
 						setInterval(function(){
 							if(app.geolocation.previousLatitude) {
+								
 								//========================================================================== if possible, get speed
 								var distance = app.getDistanceInKM(app.geolocation.currentLatitude, app.geolocation.currentLongitude, app.geolocation.previousLatitude, app.geolocation.previousLongitude);
-								var speed = (distance/app.geolocation.updateInterval)*3600;
+								app.geolocation.speed = (distance/app.geolocation.updateInterval)*3600;
 								
 								app.geolocation.previousLatitude = app.geolocation.currentLatitude;
 								app.geolocation.previousLongitude = app.geolocation.currentLongitude;
 
-								$('#logTime10').html(moment().format('hh:mm:ss'));
+								$('#logTime10').html(moment().format('hh:mm:ssA'));
 								$('#logLocationPrev').html(app.geolocation.previousLatitude + ',' + app.geolocation.previousLongitude);
-								$('#logSpeed').html(speed);
+								$('#logSpeed').html(app.geolocation.speed);
 								$('#logDistance').html(distance);
 								
-								//update firebase current and history
+								if(app.trackingOn) {
+									
+									var data = {
+										location: app.geolocation.currentLatitude+','+app.geolocation.currentLongitude,
+										speed: app.geolocation.speed,
+										timestamp: moment().format('YYYYMMDDHHmmss'),
+										type: app.selectedVehicle.type
+									};
+									
+									//========================================================================== update firebase current
+									db.collection('tracking').doc('current').collection('current').doc(app.selectedVehicle.registration).set(data);
+									
+									//========================================================================== update firebase history
+									db.collection('tracking').doc('history').collection(moment().format('YYYY')).doc(app.selectedVehicle.registration).collection(app.selectedVehicle.registration).add(data);
+								}
 							}
 						}, app.geolocation.updateInterval*1000);
-
-						
-						// navigator.geolocation.watchPosition(function(crnt){
-							// app.tracking.current = crnt;
-							// app.arrivingCheckpoint();
-						// });
-
-						// setInterval(function(){ app.updatePosition() }, app.intervalUpdatePosition);
-						// setInterval(function(){ app.updateSpeed() }, app.intervalUpdateSpeed);
-						// setInterval(function(){ app.updateHistory() }, app.intervalUpdateHistory);
 					} else {
 						$('#logOnScreen').html('Geolocation is not supported by your phone.');
 					}
 					
 				},
+				startTracking: function() {
+					if(app.selectedVehicle.registration && app.headingCheckpointSelected) app.trackingOn = !app.trackingOn;
+					app.markPreviousCheckpoint();
+				},
 				markPreviousCheckpoint: function() {
-					for(i=0; i<Number($('#headingCheckpoint option:selected').attr('index')); i++) {
-						app.selectedVehicle.checkpoint[i]['arrived'] = true;
-						app.geolocation.previousLatitude = Number(app.selectedVehicle.checkpoint[i].location.split(',')[0]);
-						app.geolocation.previousLongitude = Number(app.selectedVehicle.checkpoint[i].location.split(',')[1]);
+					if(app.trackingOn) {
+						
+						for(i=0; i<app.selectedVehicle.checkpoint.length; i++) {
+							app.selectedVehicle.checkpoint[i]['arrived'] = false;
+							
+							if(i<$('#headingCheckpoint')[0].selectedIndex) {
+								app.selectedVehicle.checkpoint[i]['arrived'] = true;
+								app.geolocation.previousLatitude = Number(app.selectedVehicle.checkpoint[i].location.split(',')[0]);
+								app.geolocation.previousLongitude = Number(app.selectedVehicle.checkpoint[i].location.split(',')[1]);
+							}
+						}
+						
+						var data = {
+							location: app.geolocation.currentLatitude+','+app.geolocation.currentLongitude,
+							speed: app.geolocation.speed,
+							timestamp: moment().format('YYYYMMDDHHmmss'),
+							type: app.selectedVehicle.type
+						};
+						
+						//========================================================================== update firebase current
+						db.collection('tracking').doc('current').collection('current').doc(app.selectedVehicle.registration).set(data);
+						
+						//========================================================================== update firebase history
+						db.collection('tracking').doc('history').collection(moment().format('YYYY')).doc(app.selectedVehicle.registration).collection(app.selectedVehicle.registration).add(data);
+						
+						//========================================================================== update firebase checkpoint
+						db.collection('vehicle').doc(app.selectedVehicle.registration).update({'checkpoint': app.selectedVehicle.checkpoint});
 					}
-					
-					//update firebase checkpoint and current and history
 				},
 				headingCheckpointSelected: function() {
 					return $('#headingCheckpoint').val();
-				},
-				arrivingCheckpoint: function() {
-					if(app.tracking.on && app.tracking.current && app.headingCheckpoint) {
-						
-						//================================================================== mark previous checkpoint as arrived
-						for(i=0; i<Number($('#headingCheckpoint option:selected').attr('index')); i++) {
-							app.selectedVehicle.checkpoint[i]['arrived'] = true;
-						}
-						
-						//========================================================================== check current distance to headingCheckpoint
-						var d = app.getDistanceInKM(app.tracking.current.coords.latitude, app.tracking.current.coords.longitude, Number(app.headingCheckpoint.split(',')[0]), Number(app.headingCheckpoint.split(',')[1]));
-						$('#logOnScreen').html(d+' KM');
-						
-						//========================================================================== 10meter considered arrived
-						if(d<0.01) {
-							var next = (Number($('#headingCheckpoint option:selected').attr('index'))+1) % app.selectedVehicle.checkpoint.length;
-							app.headingCheckpoint = app.selectedVehicle.checkpoint[next].location;
-							//$('#headingCheckpoint').prop('selectedIndex', next).change();
-						}
-					}
-				},
-				updatePosition: function() {
-					if(app.tracking.on && app.tracking.current) {
-						
-						var data = {
-							location: app.tracking.current.coords.latitude+','+app.tracking.current.coords.longitude,
-							timestamp: moment().format('YYYYMMDDhhmmss'),
-							type: app.selectedVehicle.type
-						};
-						
-						db.collection('tracking').doc('current').collection('current').doc(app.selectedVehicle.registration).update(data)
-						.catch((error) => {
-							db.collection('tracking').doc('current').collection('current').doc(app.selectedVehicle.registration).set(data)
-						});
-					}
-				},
-				updateSpeed: function() {
-					if(app.tracking.on && app.tracking.current) {
-						if(app.tracking.previous) {
-							
-							var distance = app.getDistanceInKM(app.tracking.current.coords.latitude, app.tracking.current.coords.longitude, app.tracking.previous.coords.latitude, app.tracking.previous.coords.longitude);
-							app.tracking.speed = (distance/app.intervalUpdateSpeed)*360;
-							
-							db.collection('tracking').doc('current').collection('current').doc(app.selectedVehicle.registration).update({ speed: app.tracking.speed })
-							.catch((error) => {
-								db.collection('tracking').doc('current').collection('current').doc(app.selectedVehicle.registration).set({ speed: app.tracking.speed })
-							});
-						}
-						
-						app.tracking.previous = {
-							coords: {
-								latitude: app.tracking.current.coords.latitude,
-								longitude: app.tracking.current.coords.longitude
-							},
-						};
-					}
-				},
-				updateHistory: function() {
-					if(app.tracking.on && app.tracking.current) {
-						db.collection('tracking').doc('history').collection(moment().format('YYYY')).doc(app.selectedVehicle.registration).collection(app.selectedVehicle.registration).add({
-							location: app.tracking.current.coords.latitude+','+app.tracking.current.coords.longitude,
-							speed: app.tracking.speed,
-							timestamp: moment().format('YYYYMMDDhhmmss'),
-							type: app.selectedVehicle.type
-						});
-					}
 				},
 				getDistanceInKM: function(lat1, lon1, lat2, lon2) {
 					var R = 6371; // Radius of the earth in km

@@ -211,7 +211,7 @@ db.enablePersistence().then(function() {
 						docs.forEach(function(doc) {
 							app.list.history.push({
 								v_registration: v_registration,
-								timestamp: moment(doc.data().timestamp, 'YYYYMMDDhhmmss').format('DD/MM/YYYY hh:mm:ssA'),
+								timestamp: moment(doc.data().timestamp, 'YYYYMMDDHHmmss').format('DD/MM/YYYY hh:mm:ssA'),
 								speed: doc.data().speed,
 								location: doc.data().location
 							});

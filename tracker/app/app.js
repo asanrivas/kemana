@@ -87,6 +87,7 @@ db.enablePersistence().then(function() {
 									_pLat = position.coords.latitude;
 									_pLng = position.coords.longitude;
 									
+									$('#logTime').html(moment().format('hh:mm:ss'));
 									$('#logLocation').html(position.coords.latitude + ',' + position.coords.longitude);
 									$('#logAccuracy').html(position.coords.accuracy+' m');
 									$('#logSpeed').html(_speed);

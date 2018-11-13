@@ -96,7 +96,7 @@ db.enablePersistence().then(function() {
 								function(error){
 									$('#logLocation').html('Error '+error.code);
 								},
-								{maximumAge:0, timeout:5000, enableHighAccuracy:true}
+								{maximumAge:60000, timeout:5000, enableHighAccuracy:true}
 							);
 						}, 2000);
 						
@@ -127,7 +127,7 @@ db.enablePersistence().then(function() {
 								function(error){
 									$('#logLocation').html('Error '+error.code);
 								},
-								{maximumAge:0, timeout:5000, enableHighAccuracy:true}
+								{maximumAge:60000, timeout:5000, enableHighAccuracy:true}
 							);
 						}, app.updateInterval*1000);
 

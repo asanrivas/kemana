@@ -92,7 +92,7 @@ db.enablePersistence().then(function() {
 									//========================================================================== check current distance to headingCheckpoint
 									var distance = app.getDistanceInKM(position.coords.latitude, position.coords.longitude, Number($('#headingCheckpoint option:selected').val().split(',')[0]), Number($('#headingCheckpoint option:selected').val().split(',')[1]));
 									
-									$('#logVersion').html(21);
+									$('#logVersion').html(22);
 									$('#logTime').html(moment().format('hh:mm:ss'));
 									$('#logLocation').html(position.coords.latitude + ',' + position.coords.longitude);
 									$('#logAccuracy').html(position.coords.accuracy+' m');
@@ -117,7 +117,7 @@ db.enablePersistence().then(function() {
 							if(app.geolocation.previousLatitude) {
 								//========================================================================== if possible, get speed
 								var distance = app.getDistanceInKM(app.geolocation.currentLatitude, app.geolocation.currentLongitude, app.geolocation.previousLatitude, app.geolocation.previousLongitude);
-								var speed = (distance/app.geolocation.updateInterval)*360;
+								var speed = (distance/app.geolocation.updateInterval)*3600;
 								
 								app.geolocation.previousLatitude = app.geolocation.currentLatitude;
 								app.geolocation.previousLongitude = app.geolocation.currentLongitude;

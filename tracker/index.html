@@ -19,7 +19,7 @@
 				<img src="img/bus.png" style="width:75%; position:absolute; top:0; right:0; opacity:.7;">
 				<div class="uk-position-center uk-padding uk-text-center">
 					<img src="../img/logo.svg" class="uk-margin" style="height:50px">
-					<div class="uk-margin-large">Welcome v1. Before you start, you need to activate your smartphone with the core system.</div>
+					<div class="uk-margin-large">Welcome. Before you start, you need to activate your smartphone with the core system.</div>
 					
 					<form class="uk-form-stacked uk-padding">
 						<div class="uk-margin">
@@ -73,7 +73,8 @@
 				<img class="uk-position-center" :class="{'vehicle':tracking.on}" src="img/bus.svg">
 				<img class="road uk-position-center" :class="{'uk-hidden':!tracking.on}" src="img/road.svg">
 				
-				<div id="logOnScreen" class="uk-position-center uk-padding uk-text-center uk-width-1-1" style="top:calc(100% - 30px); color:white">
+				<div id="logOnScreen" class="uk-position-center uk-padding uk-text-center uk-width-1-1" style="top:calc(100% - 50px); color:white;">
+					<div>V2</div>
 					<div>SPEED: <span id="logSpeed"></span></div>
 					<div>DISTANCE IN 10sec: <span id="logDistance"></span></div>
 				</div>

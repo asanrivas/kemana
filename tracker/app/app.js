@@ -72,10 +72,14 @@ db.enablePersistence().then(function() {
 					var app = this;
 					
 					if(navigator.geolocation) {
-						navigator.geolocation.watchPosition(function(crnt){
-							app.tracking.current = crnt;
-							//app.arrivingCheckpoint();
-						});
+						navigator.geolocation.watchPosition(
+							function(crnt) {
+								app.tracking.current = crnt;
+								// app.arrivingCheckpoint();
+							},
+							app.errorCallback_highAccuracy,
+							{ maximumAge:0, timeout:10000, enableHighAccuracy:true }
+						);
 
 						setInterval(function(){ app.updatePosition() }, app.intervalUpdatePosition);
 						setInterval(function(){ app.updateSpeed() }, app.intervalUpdateSpeed);
@@ -84,6 +88,9 @@ db.enablePersistence().then(function() {
 						$('#logOnScreen').html('Geolocation is not supported by your phone.');
 					}
 					
+				},
+				errorCallback_highAccuracy: function() {
+					$('#logSpeed').html('Error '+error.code);
 				},
 				arrivingCheckpoint: function() {
 					if(app.tracking.on && app.tracking.current && app.headingCheckpoint) {

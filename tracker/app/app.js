@@ -115,7 +115,7 @@ db.enablePersistence().then(function() {
 									app.geolocation.previousLatitude = position.coords.latitude;
 									app.geolocation.longitude = position.coords.longitude;
 									
-									$('#logVersion').html(11);
+									$('#logVersion').html(12);
 									$('#logTime').html(moment().format('hh:mm:ss'));
 									$('#logLocation').html(position.coords.latitude + ',' + position.coords.longitude);
 									$('#logAccuracy').html(position.coords.accuracy+' m');

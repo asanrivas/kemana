@@ -59,13 +59,13 @@
 						<div class="uk-margin">
 							<label class="uk-form-label" style="color:white">Which checkpoint are you heading?</label>
 							<div class="uk-form-controls">
-								<select id="headingCheckpoint" class="uk-select" v-model="headingCheckpoint" :disabled="!selectedVehicle.registration">
+								<select id="headingCheckpoint" class="uk-select" :disabled="!selectedVehicle.registration" @change="markPreviousCheckpoint">
 									<option v-for="(opt, index) in selectedVehicle.checkpoint" :value="opt.location" :index="index">{{opt.desc}}</option>
 								</select>
 							</div>
 						</div>
 						<div class="uk-margin">
-							<button type="button" class="uk-button uk-width-1-1" :class="{'uk-button-danger':tracking.on, 'uk-button-secondary':!tracking.on}" @click="tracking.on=(selectedVehicle.registration && headingCheckpoint)?!tracking.on:tracking.on" :disabled="!selectedVehicle.registration || !headingCheckpoint">{{tracking.on?'Stop':'Start'}} Tracking</button>
+							<button type="button" class="uk-button uk-width-1-1" :class="{'uk-button-danger':tracking.on, 'uk-button-secondary':!tracking.on}" @click="tracking.on=(selectedVehicle.registration && headingCheckpointSelected)?!tracking.on:tracking.on" :disabled="!selectedVehicle.registration || !headingCheckpointSelected">{{tracking.on?'Stop':'Start'}} Tracking</button>
 						</div>
 					</form>
 				</div>
@@ -73,13 +73,14 @@
 				<img class="uk-position-center" :class="{'vehicle':tracking.on}" src="img/bus.svg">
 				<img class="road uk-position-center" :class="{'uk-hidden':!tracking.on}" src="img/road.svg">
 				
-				<div id="logOnScreen" class="uk-position-center uk-padding uk-text-center uk-width-1-1" style="top:calc(100% - 100px); color:white;">
+				<div id="logOnScreen" class="uk-position-center uk-padding uk-text-center uk-width-1-1" style="top:calc(100% - 120px); color:white;">
 					<div>VERSION: <span id="logVersion"></span></div>
 					<div>TIME: <span id="logTime"></span></div>
 					<div>LOCATION: <span id="logLocation"></span></div>
 					<div>ACCURACY: <span id="logAccuracy"></span></div>
 					<div>SPEED: <span id="logSpeed"></span></div>
-					<div>DISTANCE: <span id="logDistance"></span></div>
+					<div>KM AFTER {{geolocation.updateInterval}} SECONDS: <span id="logDistance"></span></div>
+					<div>KM TO HEADING CP: <span id="logDistance2CP"></span></div>
 				</div>
 			</div>
 

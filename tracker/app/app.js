@@ -25,15 +25,16 @@ db.enablePersistence().then(function() {
 				page: null,
 				number: null,
 				activationCode: localStorage.getItem('JEJAK_ACTIVATION_CODE'),
-				intervalUpdatePosition: doc.data().intervalUpdatePosition,
-				intervalUpdateSpeed: doc.data().intervalUpdateSpeed,
-				intervalUpdateHistory: doc.data().intervalUpdateHistory,
+				geolocation: {
+					updateInterval: doc.data().updateInterval,
+					previousLatitude: null,
+					previousLongitude: null,
+				},
 				selectedVehicle: {
 					registration: null,
 					checkpoint: [],
 					type: null
 				},
-				headingCheckpoint: null,
 				tracking: {
 					on: false,
 					speed: 0,
@@ -73,33 +74,62 @@ db.enablePersistence().then(function() {
 					
 					if(navigator.geolocation) {
 						
-						var _pLat = _pLng = _speed = _distance = 0;
-						
+						//================================================================ track checkpoint arrival every 2 second
 						setInterval(function(){
 							navigator.geolocation.getCurrentPosition(
 								function(position){
-									
-									if(_pLat) {
-										_distance = app.getDistanceInKM(position.coords.latitude, position.coords.longitude, _pLat, _pLng);
-										_speed = (_distance/5)*360;
+
+									if($('#headingCheckpoint').val()) {
+										
+										//========================================================================== check current distance to headingCheckpoint
+										var d = app.getDistanceInKM(position.coords.latitude, position.coords.longitude, Number($('#headingCheckpoint option:selected').val().split(',')[0]), Number($('#headingCheckpoint option:selected').val().split(',')[1]));
+										$('#logDistance2CP').html(d);
+										
+										//========================================================================== 10meter considered arrived
+										if(d<0.01) {
+											var next = (Number($('#headingCheckpoint option:selected').attr('index'))+1) % app.selectedVehicle.checkpoint.length;
+											$('#headingCheckpoint').prop('selectedIndex', next).change();
+											app.markPreviousCheckpoint();
+										}
 									}
-									
-									_pLat = position.coords.latitude;
-									_pLng = position.coords.longitude;
-									
-									$('#logVersion').html(10);
-									$('#logTime').html(moment().format('hh:mm:ss'));
-									$('#logLocation').html(position.coords.latitude + ',' + position.coords.longitude);
-									$('#logAccuracy').html(position.coords.accuracy+' m');
-									$('#logSpeed').html(_speed);
-									$('#logDistance').html(_distance+' km');
 								},
 								function(error){
-									$('#logSpeed').html('Error '+error.code);
+									$('#logLocation').html('Error '+error.code);
 								},
 								{maximumAge:0, timeout:5000, enableHighAccuracy:true}
 							);
-						}, 5000);
+						}, 2000);
+						
+						//================================================================ update current position every "app.updateInterval" seconds
+						setInterval(function(){
+							navigator.geolocation.getCurrentPosition(
+								function(position){
+
+									//========================================================================== if possible, get speed
+									var distance = speed = 0;
+									if(app.geolocation.previousLatitude) {
+										distance = app.getDistanceInKM(position.coords.latitude, position.coords.longitude, app.geolocation.previousLatitude, app.geolocation.longitude);
+										speed = (distance/app.updateInterval)*360;
+									}
+									
+									app.geolocation.previousLatitude = position.coords.latitude;
+									app.geolocation.longitude = position.coords.longitude;
+									
+									$('#logVersion').html(11);
+									$('#logTime').html(moment().format('hh:mm:ss'));
+									$('#logLocation').html(position.coords.latitude + ',' + position.coords.longitude);
+									$('#logAccuracy').html(position.coords.accuracy+' m');
+									$('#logSpeed').html(speed);
+									$('#logDistance').html(distance);
+									
+									//update firebase current and history
+								},
+								function(error){
+									$('#logLocation').html('Error '+error.code);
+								},
+								{maximumAge:0, timeout:5000, enableHighAccuracy:true}
+							);
+						}, app.updateInterval*1000);
 
 						
 						// navigator.geolocation.watchPosition(function(crnt){
@@ -114,6 +144,18 @@ db.enablePersistence().then(function() {
 						$('#logOnScreen').html('Geolocation is not supported by your phone.');
 					}
 					
+				},
+				markPreviousCheckpoint: function() {
+					for(i=0; i<Number($('#headingCheckpoint option:selected').attr('index')); i++) {
+						app.selectedVehicle.checkpoint[i]['arrived'] = true;
+						app.geolocation.previousLatitude = app.selectedVehicle.checkpoint[i].location.split(',')[0];
+						app.geolocation.previousLongitude = app.selectedVehicle.checkpoint[i].location.split(',')[1];
+					}
+					
+					//update firebase checkpoint and current and history
+				},
+				headingCheckpointSelected: function() {
+					return $('#headingCheckpoint').val();
 				},
 				arrivingCheckpoint: function() {
 					if(app.tracking.on && app.tracking.current && app.headingCheckpoint) {

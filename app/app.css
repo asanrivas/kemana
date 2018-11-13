@@ -12,6 +12,9 @@ body, html, #app {
 body.notfound {
 	background-color: #D9443F;
 }
+#app {
+	overflow: scroll;
+}
 [id^=pg-] {
 	width: 100vw;
 	height: 100vh;
@@ -223,8 +226,8 @@ ol.timeline li:last-child:before {
 /* ================================================================================== FAB */
 .fab {
 	position: fixed;
-	bottom: 25px;
-	right: 25px;
+	bottom: 50px;
+    right: 50px;
 	z-index: 100;
 }
 .fab .fab-item {
@@ -234,7 +237,7 @@ ol.timeline li:last-child:before {
     height: 55px;
 	border-radius: 50%;
 	transition: .3s ease;
-	box-shadow: 0 5px 15px rgba(0,0,0,.28);
+	box-shadow: 0 5px 15px rgba(0,0,0,.5);
 	background: linear-gradient(40deg,#FF6EC4,#7873F5);
 }
 .fab .fab-item:hover {

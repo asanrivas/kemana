@@ -26,6 +26,9 @@
 .icon-navigation:before {
   content: "\e55d";
 }
+.icon-check-circle:before {
+  content: "\e902";
+}
 .icon-chevron-down:before {
   content: "\e90a";
 }

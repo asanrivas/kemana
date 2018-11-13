@@ -1,3 +1,7 @@
+#app {
+	overflow: hidden;
+}
+
 /* ================================================================================== WELCOME */
 #pg-welcome {
 	background: linear-gradient(40deg,#EFEFEF 0%,#FFFFFF 65%);

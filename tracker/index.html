@@ -73,7 +73,10 @@
 				<img class="uk-position-center" :class="{'vehicle':tracking.on}" src="img/bus.svg">
 				<img class="road uk-position-center" :class="{'uk-hidden':!tracking.on}" src="img/road.svg">
 				
-				<div id="logOnScreen" class="uk-position-center uk-padding uk-text-center uk-width-1-1" style="top:calc(100% - 30px); color:white">...</div>
+				<div id="logOnScreen" class="uk-position-center uk-padding uk-text-center uk-width-1-1" style="top:calc(100% - 30px); color:white">
+					<div>SPEED: <span id="logSpeed"></span></div>
+					<div>DISTANCE IN 10sec: <span id="logDistance"></span></div>
+				</div>
 			</div>
 
 		</div>

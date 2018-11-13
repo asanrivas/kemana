@@ -135,6 +135,7 @@
 								<td class="uk-text-center"><span 
 									class="iconmoon action-icon icon-file-text" uk-tooltip="title: Detail; pos: bottom" uk-toggle="target: #modal-vehicle" @click="modal.vehicle=JSON.parse(JSON.stringify(item))"></span><span 
 									class="iconmoon action-icon icon-map" uk-tooltip="title: Show In Map; pos: bottom" @click="gmap.showInMap(item.registration)"></span><span 
+									class="iconmoon action-icon icon-rewind" uk-tooltip="title: History; pos: bottom" @click="showHistory(item.registration)"></span><span 
 									class="iconmoon action-icon icon-trash" uk-tooltip="title: Delete; pos: bottom" @click="crudVehicle('delete', item.registration)"></span>
 								</td>
 							</tr>
@@ -144,6 +145,29 @@
 				
 				<div class="fab">
 					<div class="fab-item" uk-tooltip="title: New; pos: left" uk-toggle="target: #modal-vehicle" @click="modal.vehicle={checkpoint:[{desc:'', location:''}]}"><span class="uk-position-center iconmoon icon-plus"></span></div>
+				</div>
+			</div>
+			
+			<!-- ========================================================================================== PAGE HISTORY -->
+			<div v-if="page=='history'" class="uk-container">
+				<div class="uk-card-default uk-padding-small">
+					<div class="uk-margin-small"><b>Location History: {{list.history[0].v_registration}}</b></div>
+					<table class="uk-table uk-table-divider">
+						<thead>
+							<tr>
+								<th>TIME</th>
+								<th>LOCATION</th>
+								<th>SPEED</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr v-for="item in list.history">
+								<td>{{item.timestamp}}</td>
+								<td>{{item.location}}</td>
+								<td>{{item.speed}}</td>
+							</tr>
+						</tbody>
+					</table>
 				</div>
 			</div>
 			

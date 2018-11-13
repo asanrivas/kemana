@@ -25,6 +25,7 @@ db.enablePersistence().then(function() {
 				list: {
 					smartphone: [],
 					vehicle: [],
+					history: [],
 				},
 				modal: {
 					smartphone: {},
@@ -203,6 +204,20 @@ db.enablePersistence().then(function() {
 							location: ''
 						});
 					}
+				},
+				showHistory: function(v_registration) {
+					db.collection('tracking').doc('history').collection(moment().format('YYYY')).doc(v_registration).collection(v_registration).orderBy('timestamp', 'desc').get().then(docs => {
+						app.list.history = [];
+						docs.forEach(function(doc) {
+							app.list.history.push({
+								v_registration: v_registration,
+								timestamp: moment(doc.data().timestamp, 'YYYYMMDDhhmmss').format('DD/MM/YYYY hh:mm:ssA'),
+								speed: doc.data().speed,
+								location: doc.data().location
+							});
+						});
+						app.page = 'history';
+					});
 				},
 				// generateQr: function(uuid) {
 					// UIkit.modal.alert(

@@ -83,6 +83,11 @@ db.enablePersistence().then(function() {
 										
 										//========================================================================== check current distance to headingCheckpoint
 										var d = app.getDistanceInKM(position.coords.latitude, position.coords.longitude, Number($('#headingCheckpoint option:selected').val().split(',')[0]), Number($('#headingCheckpoint option:selected').val().split(',')[1]));
+										
+										$('#logVersion').html(16);
+										$('#logTime').html(moment().format('hh:mm:ss'));
+										$('#logLocation').html(position.coords.latitude + ',' + position.coords.longitude);
+										$('#logAccuracy').html(position.coords.accuracy+' m');
 										$('#logDistance2CP').html(d);
 										
 										//========================================================================== 10meter considered arrived
@@ -109,16 +114,13 @@ db.enablePersistence().then(function() {
 									var distance = speed = 0;
 									if(app.geolocation.previousLatitude) {
 										distance = app.getDistanceInKM(position.coords.latitude, position.coords.longitude, app.geolocation.previousLatitude, app.geolocation.longitude);
-										speed = (distance/app.updateInterval)*360;
+										speed = (distance/app.geolocation.updateInterval)*360;
 									}
 									
 									app.geolocation.previousLatitude = position.coords.latitude;
 									app.geolocation.longitude = position.coords.longitude;
 									
-									$('#logVersion').html(12);
-									$('#logTime').html(moment().format('hh:mm:ss'));
-									$('#logLocation').html(position.coords.latitude + ',' + position.coords.longitude);
-									$('#logAccuracy').html(position.coords.accuracy+' m');
+									
 									$('#logSpeed').html(speed);
 									$('#logDistance').html(distance);
 									
@@ -129,7 +131,7 @@ db.enablePersistence().then(function() {
 								},
 								{maximumAge:60000, timeout:5000, enableHighAccuracy:true}
 							);
-						}, app.updateInterval*1000);
+						}, app.geolocation.updateInterval*1000);
 
 						
 						// navigator.geolocation.watchPosition(function(crnt){

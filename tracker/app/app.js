@@ -79,16 +79,20 @@ db.enablePersistence().then(function() {
 						//================================================================ watch position in realtime
 						navigator.geolocation.watchPosition(
 							function(position){
-								console.log('start watchPosition');
+							
 								app.geolocation.currentLatitude = position.coords.latitude;
 								app.geolocation.currentLongitude = position.coords.longitude;
+								if(!app.geolocation.previousLatitude) {
+									app.geolocation.previousLatitude = position.coords.latitude;
+									app.geolocation.previousLongitude = position.coords.longitude;
+								}
 								
 								//================================================================ track checkpoint arrival
 								if($('#headingCheckpoint').val()) {
 									//========================================================================== check current distance to headingCheckpoint
 									var distance = app.getDistanceInKM(position.coords.latitude, position.coords.longitude, Number($('#headingCheckpoint option:selected').val().split(',')[0]), Number($('#headingCheckpoint option:selected').val().split(',')[1]));
 									
-									$('#logVersion').html(18);
+									$('#logVersion').html(19);
 									$('#logTime').html(moment().format('hh:mm:ss'));
 									$('#logLocation').html(position.coords.latitude + ',' + position.coords.longitude);
 									$('#logAccuracy').html(position.coords.accuracy+' m');
@@ -110,22 +114,21 @@ db.enablePersistence().then(function() {
 
 						//================================================================ update current position every "app.updateInterval" seconds
 						setInterval(function(){
-							//========================================================================== if possible, get speed
-							var distance = speed = 0;
 							if(app.geolocation.previousLatitude) {
-								distance = app.getDistanceInKM(app.geolocation.currentLatitude, app.geolocation.currentLongitude, app.geolocation.previousLatitude, app.geolocation.previousLongitude);
-								speed = (distance/app.geolocation.updateInterval)*360;
-							}
-							
-							app.geolocation.previousLatitude = app.geolocation.currentLatitude;
-							app.geolocation.previousLongitude = app.geolocation.currentLongitude;
+								//========================================================================== if possible, get speed
+								var distance = app.getDistanceInKM(app.geolocation.currentLatitude, app.geolocation.currentLongitude, app.geolocation.previousLatitude, app.geolocation.previousLongitude);
+								var speed = (distance/app.geolocation.updateInterval)*360;
+								
+								app.geolocation.previousLatitude = app.geolocation.currentLatitude;
+								app.geolocation.previousLongitude = app.geolocation.currentLongitude;
 
-							$('#logTime10').html(moment().format('hh:mm:ss'));
-							$('#logLocationPrev').html(app.geolocation.previousLatitude + ',' + app.geolocation.previousLongitude);
-							$('#logSpeed').html(speed);
-							$('#logDistance').html(distance);
-							
-							//update firebase current and history
+								$('#logTime10').html(moment().format('hh:mm:ss'));
+								$('#logLocationPrev').html(app.geolocation.previousLatitude + ',' + app.geolocation.previousLongitude);
+								$('#logSpeed').html(speed);
+								$('#logDistance').html(distance);
+								
+								//update firebase current and history
+							}
 						}, app.geolocation.updateInterval*1000);
 
 						

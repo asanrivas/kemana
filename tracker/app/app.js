@@ -88,7 +88,7 @@ db.enablePersistence().then(function() {
 									//========================================================================== check current distance to headingCheckpoint
 									var distance = app.getDistanceInKM(position.coords.latitude, position.coords.longitude, Number($('#headingCheckpoint option:selected').val().split(',')[0]), Number($('#headingCheckpoint option:selected').val().split(',')[1]));
 									
-									$('#logVersion').html(17);
+									$('#logVersion').html(18);
 									$('#logTime').html(moment().format('hh:mm:ss'));
 									$('#logLocation').html(position.coords.latitude + ',' + position.coords.longitude);
 									$('#logAccuracy').html(position.coords.accuracy+' m');

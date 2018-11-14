@@ -23,43 +23,93 @@ app = new Vue({
 			vehicle: [],
 		},
 		hasSubscribe: false,
+		directionsService: null,
 	},
 	methods: {
 		monitorList: function() {
-			db.collection('vehicle').onSnapshot(function(docs) {
+			db.collection('vehicle').get().then(function(docs) {
+				console.log('First time get bus list');
 				app.list.vehicle = [];
 				docs.forEach(function(doc) {
 					app.list.vehicle.push(doc.data());
 				});
 			});
 		},
-		getETA: function(from, to) {
-			$.get("https://maps.googleapis.com/maps/api/directions/json?origin="+from+"&destination="+to+"&key=AIzaSyAuK6RCR8833Ei9sbZ5Y7it9ananiJxYSg", function(data){
-				return data.routes[0].legs[0].duration.text;
+		initDirectionService: function() {
+			var app = this;
+			
+			if(window['google']) {
+				app.directionsService = new google.maps.DirectionsService;
+			}
+			else {
+				setTimeout(app.initDirectionService, 100);
+			}
+		},
+		monitorVehicleLocation: function() {
+			//if(app.hasSubscribe) unsubscribe();
+			//app.hasSubscribe = true;
+			
+			unsubscribe = db.collection('tracking').doc('current').collection('current').doc(app.selectedVehicle.registration).onSnapshot(function(doc1) {
+				console.log('Bus current location updated');
+				
+				console.log('Getting selectedVehicle checkpoint status');
+				db.collection('vehicle').doc(app.selectedVehicle.registration).get().then(function(doc2) {
+					app.selectedVehicle.checkpoint = doc2.data().checkpoint;
+					app.selectedVehicle.checkpoint.push(1);
+					app.selectedVehicle.checkpoint.pop();
+					
+					console.log('selectedVehicle.checkpoint', app.selectedVehicle.checkpoint);
+					var isHeadingCheckpoint = true;
+					for(i=0; i<app.selectedVehicle.checkpoint.length; i++) {
+						if(!app.selectedVehicle.checkpoint[i].arrived) {
+							var from = isHeadingCheckpoint?doc1.data().location:app.selectedVehicle.checkpoint[i-1].location;
+							isHeadingCheckpoint = false;
+							console.log('from',from,'app.selectedVehicle.checkpoint['+i+'].location',app.selectedVehicle.checkpoint[i].location);
+							app.getETA(from, app.selectedVehicle.checkpoint[i].location, i);
+						}
+					}
+				});
+				
 			});
+		},
+		getETA: function(from, to, i) {
+			app.directionsService.route({
+				origin: from,
+				destination: to,
+				travelMode: 'DRIVING'
+			}, function(response, status) {
+				if (status === 'OK') {
+					app.selectedVehicle.checkpoint[i].eta = response.routes[0].legs[0].duration.value;
+					app.selectedVehicle.checkpoint.push(1);
+					app.selectedVehicle.checkpoint.pop();
+				} else {
+					window.alert('Directions request failed due to ' + status);
+				}
+			});
+			
+			// This API can only be called from server or directly using browser. Ajax call will return CORS even hosted on https
+			//$.get("https://maps.googleapis.com/maps/api/directions/json?origin="+from+"&destination="+to+"&key=AIzaSyAuK6RCR8833Ei9sbZ5Y7it9ananiJxYSg", function(data){
+			//	return data.routes[0].legs[0].duration.text;
+			//});
+		},
+		accumulateETA: function(index) {
+			var sum = 0;
+			for(i=0; i<index+1; i++) {
+				sum += app.selectedVehicle.checkpoint[i].eta;
+			}
+			
+			return moment('2018-01-01').add(sum, 'seconds').format('HH:mm:ss');
 		}
 	},
 	mounted: function() {
 		$('#app').removeClass('uk-hidden');
 		this.monitorList();
+		this.initDirectionService();
 	},
 	watch: {
 		'selectedVehicle.registration': function(newValue, oldValue) {
 			app.selectedVehicle = app.list.vehicle.find(item => { return item.registration === app.selectedVehicle.registration });
-			
-			//====================================================== calculate ETA
-			if(app.hasSubscribe) unsubscribe();
-			app.hasSubscribe = true;
-			unsubscribe = db.collection('tracking').doc('current').collection('current').doc(app.selectedVehicle.registration).onSnapshot(function(doc) {
-				var isHeadingCheckpoint = true;
-				for(i=0; i<app.selectedVehicle.checkpoint.length; i++) {
-					if(!app.selectedVehicle.checkpoint[i].arrived) {
-						var from = isHeadingCheckpoint?doc.data().location:app.selectedVehicle.checkpoint[i-1].location;
-						isHeadingCheckpoint = false;
-						app.selectedVehicle.checkpoint[i].eta = app.getETA(from, app.selectedVehicle.checkpoint[i].location);
-					}
-				}
-			});
+			app.monitorVehicleLocation();			
 		},
 	}
 });

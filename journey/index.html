@@ -28,11 +28,11 @@
 				</div>
 			
 				<div class="uk-position-center timeline-container">
-					<div v-for="item in selectedVehicle.checkpoint" class="timeline-item" :class="{arrived: item.arrived}">
+					<div v-for="(item, index) in selectedVehicle.checkpoint" class="timeline-item" :class="{arrived: item.arrived}">
 						<div class="uk-display-inline-block timeline-dot"><span v-if="item.arrived" class="iconmoon icon-check-circle"></span></div>
 						<div class="uk-display-inline-block timeline-body">
 							<div class="timeline-title">{{item.desc}}</div>
-							<div class="timeline-content"><span class="iconmoon action-icon icon-map"></span> ETA {{item.eta}}</div>
+							<div class="timeline-content"><span class="iconmoon action-icon icon-map"></span><span v-if="item.arrived"> Arrived</span><span v-else> ETA {{accumulateETA(index)}}</span></div>
 						</div>
 					</div>
 				</div>
@@ -47,5 +47,7 @@
 		<script src="../lib/vuejs/vue.js"></script>
 		<script src="../lib/firebasejs/firebase-5.5.8.js"></script>
 		<script src="app/app.js"></script>
+		
+		<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAuK6RCR8833Ei9sbZ5Y7it9ananiJxYSg" async defer></script>
 	</body>
 </html>

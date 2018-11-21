@@ -13,7 +13,7 @@ db.settings({timestampsInSnapshots: true});
 
 Vue.use(VueMask.VueMaskPlugin);
 
-db.enablePersistence().then(function() {
+db.enablePersistence({experimentalTabSynchronization:true}).then(function() {
 	db.collection('config').doc('config').get().then(doc => {
 		app = new Vue({
 			el: '#app',

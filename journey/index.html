@@ -2,7 +2,7 @@
 <html>
 	<head>
 		<meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no, width=device-width">
-		<title>Jejak</title>
+		<title>Kemana - Journey</title>
 		<link rel="icon" type="image/png" href="../img/favicon.png">
 
 		<link rel="stylesheet" href="../lib/uikit-3.0.0/uikit.min.css">
@@ -23,7 +23,7 @@
 								<option v-for="opt in list.vehicle" :value="opt.registration">{{opt.registration}}</option>
 							</select>
 						</div>
-						<div class="uk-margin-small text-white">The bus is moving at 22km/h</div>
+						<div class="uk-margin-small text-white" v-if="selectedVehicle.speed">The bus is moving at {{selectedVehicle.speed}}km/h</div>
 					</form>
 				</div>
 			
@@ -32,12 +32,12 @@
 						<div class="uk-display-inline-block timeline-dot"><span v-if="item.arrived" class="iconmoon icon-check-circle"></span></div>
 						<div class="uk-display-inline-block timeline-body">
 							<div class="timeline-title">{{item.desc}}</div>
-							<div class="timeline-content"><span class="iconmoon action-icon icon-map"></span><span v-if="item.arrived"> Arrived</span><span v-else> ETA {{accumulateETA(index)}}</span></div>
+							<div class="timeline-content"><span class="iconmoon action-icon icon-map"></span><span v-if="item.arrived"> Arrived</span><span v-else> ETA {{selectedVehicle.checkpoint[index].eta}}</span></div>
 						</div>
 					</div>
 				</div>
 				
-				<div class="uk-position-bottom-center uk-padding"><img src="../img/logo.svg" style="height:22px"></div>
+				<div class="uk-position-bottom-center uk-padding"><img src="../img/logo.svg" style="height:32px"></div>
 			</div>
 		</div>
 

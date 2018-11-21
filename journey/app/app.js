@@ -28,7 +28,6 @@ app = new Vue({
 	methods: {
 		monitorList: function() {
 			db.collection('vehicle').get().then(function(docs) {
-				console.log('First time get bus list');
 				app.list.vehicle = [];
 				docs.forEach(function(doc) {
 					app.list.vehicle.push(doc.data());
@@ -49,22 +48,21 @@ app = new Vue({
 			//if(app.hasSubscribe) unsubscribe();
 			//app.hasSubscribe = true;
 			
-			unsubscribe = db.collection('tracking').doc('current').collection('current').doc(app.selectedVehicle.registration).onSnapshot(function(doc1) {
-				console.log('Bus current location updated');
+			unsubscribe = db.collection('tracking').doc('current').collection('current').doc(app.selectedVehicle.registration).onSnapshot(function(doc1) {			
+				app.selectedVehicle.speed = doc1.data().speed;
+				app.selectedVehicle.location = doc1.data().location;
 				
-				console.log('Getting selectedVehicle checkpoint status');
 				db.collection('vehicle').doc(app.selectedVehicle.registration).get().then(function(doc2) {
 					app.selectedVehicle.checkpoint = doc2.data().checkpoint;
 					app.selectedVehicle.checkpoint.push(1);
 					app.selectedVehicle.checkpoint.pop();
 					
-					console.log('selectedVehicle.checkpoint', app.selectedVehicle.checkpoint);
 					var isHeadingCheckpoint = true;
 					for(i=0; i<app.selectedVehicle.checkpoint.length; i++) {
 						if(!app.selectedVehicle.checkpoint[i].arrived) {
-							var from = isHeadingCheckpoint?doc1.data().location:app.selectedVehicle.checkpoint[i-1].location;
+							//var from = isHeadingCheckpoint?doc1.data().location:app.selectedVehicle.checkpoint[i-1].location; //nie kalo nak ETA from checkpoint to checkpoint
+							var from = doc1.data().location;
 							isHeadingCheckpoint = false;
-							console.log('from',from,'app.selectedVehicle.checkpoint['+i+'].location',app.selectedVehicle.checkpoint[i].location);
 							app.getETA(from, app.selectedVehicle.checkpoint[i].location, i);
 						}
 					}
@@ -79,7 +77,8 @@ app = new Vue({
 				travelMode: 'DRIVING'
 			}, function(response, status) {
 				if (status === 'OK') {
-					app.selectedVehicle.checkpoint[i].eta = response.routes[0].legs[0].duration.value;
+					var pickupDuration = i*10; //10 saat setiap kali org naik
+					app.selectedVehicle.checkpoint[i].eta = moment('2018-01-01').add(response.routes[0].legs[0].duration.value + pickupDuration, 'seconds').format('HH:mm:ss');
 					app.selectedVehicle.checkpoint.push(1);
 					app.selectedVehicle.checkpoint.pop();
 				} else {
@@ -92,14 +91,16 @@ app = new Vue({
 			//	return data.routes[0].legs[0].duration.text;
 			//});
 		},
-		accumulateETA: function(index) {
-			var sum = 0;
-			for(i=0; i<index+1; i++) {
-				sum += app.selectedVehicle.checkpoint[i].eta;
-			}
+		// accumulateETA: function(index) {
+			// var sum = 0;
+			// for(i=0; i<index+1; i++) {
+				// sum += app.selectedVehicle.checkpoint[i].eta;
+			// }
 			
-			return moment('2018-01-01').add(sum, 'seconds').format('HH:mm:ss');
-		}
+			// sum = moment('2018-01-01').add(sum, 'seconds').format('HH:mm:ss');
+			// console.log(sum);
+			// return moment('2018-01-01').add(sum, 'seconds').format('HH:mm:ss');
+		// }
 	},
 	mounted: function() {
 		$('#app').removeClass('uk-hidden');

@@ -102,7 +102,7 @@
 								<td :class="{'uk-text-success':item.status=='activated', 'uk-text-danger':item.status!='activated'}">{{item.status}}</td>
 								<td class="uk-text-center"><span 
 									class="iconmoon icon-file-text action-icon" uk-tooltip="title: Detail; pos: bottom" uk-toggle="target: #modal-smartphone" @click="modal.smartphone=JSON.parse(JSON.stringify(item))"></span><span 
-									class="iconmoon icon-link action-icon uk-hidden" uk-tooltip="title: Activate; pos: bottom" @click="generateQr(item.s_uuid)"></span><span 
+									class="iconmoon icon-link action-icon" uk-tooltip="title: Activate; pos: bottom" @click="generateQr(item.id)"></span><span 
 									class="iconmoon icon-trash action-icon" uk-tooltip="title: Delete; pos: bottom" @click="crudSmartphone('delete', item.id)"></span>
 								</td>
 							</tr>

@@ -219,30 +219,30 @@ db.enablePersistence({experimentalTabSynchronization:true}).then(function() {
 						app.page = 'history';
 					});
 				},
-				// generateQr: function(uuid) {
-					// UIkit.modal.alert(
-						// '<canvas id="qr"></canvas>'+
-						// '<div class="uk-text-large text-purple">'+uuid+'</div>'+
-						// '<p>To complete the pairing, scan the QR Code from targeted smartphone or send the code to the smartphone and type manually.</p>',
-						// { bgClose:true }
-					// );
-					// $('#qr').parent().addClass('uk-text-center');
+				generateQr: function(uuid) {
+					UIkit.modal.alert(
+						'<canvas id="qr"></canvas>'+
+						'<div class="uk-text-large text-purple">'+uuid+'</div>'+
+						'<p>Tracker Apps will need this code to activate their phone for the first time.</p>',
+						{ bgClose:true }
+					);
+					$('#qr').parent().addClass('uk-text-center');
 					
-					// var qr = new QRious({
-						// element: $('#qr')[0],
-						// value: uuid,
-						// background: 'white', // background color
-						// foreground: 'black', // foreground color
-						// backgroundAlpha: 1,
-						// foregroundAlpha: 1,
-						// level: 'L', // Error correction level of the QR code (L, M, Q, H)
-						// mime: 'image/png', // MIME type used to render the image for the QR code
-						// size: 150, // Size of the QR code in pixels.
-						// padding: null // padding in pixels
-					// });
+					var qr = new QRious({
+						element: $('#qr')[0],
+						value: uuid,
+						background: 'white', // background color
+						foreground: 'black', // foreground color
+						backgroundAlpha: 1,
+						foregroundAlpha: 1,
+						level: 'L', // Error correction level of the QR code (L, M, Q, H)
+						mime: 'image/png', // MIME type used to render the image for the QR code
+						size: 150, // Size of the QR code in pixels.
+						padding: null // padding in pixels
+					});
 					
-					// this.getActivationStatus(uuid);
-				// },
+					//this.getActivationStatus(uuid);
+				},
 				// getActivationStatus: function(uuid) {
 					// var _this = this;
 					// $.getJSON('api/getActivationStatus.php?uuid='+uuid, function(data){

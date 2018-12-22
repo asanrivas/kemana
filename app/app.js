@@ -216,7 +216,12 @@ db.enablePersistence({experimentalTabSynchronization:true}).then(function() {
 								location: doc.data().location
 							});
 						});
-						app.page = 'history';
+						if(app.list.history.length>0) {
+							app.page = 'history';
+						}
+						else {
+							UIkit.modal.alert('This vehicle has no history');
+						}
 					});
 				},
 				generateQr: function(uuid) {
@@ -339,14 +344,12 @@ db.enablePersistence({experimentalTabSynchronization:true}).then(function() {
 				},
 				'gmap.center': function(newValue, oldValue) {
 					newValue = newValue.replace(/\s/g,'').split(',')
-					db.collection('config').doc('config').set({
-						mapCenter: app.gmap.center,
-						mapZoom: app.gmap.zoom
+					db.collection('config').doc('config').update({
+						mapCenter: app.gmap.center
 					});
 				},
 				'gmap.zoom': function(newValue, oldValue) {
-					db.collection('config').doc('config').set({
-						mapCenter: app.gmap.center,
+					db.collection('config').doc('config').update({
 						mapZoom: app.gmap.zoom
 					});
 				}
